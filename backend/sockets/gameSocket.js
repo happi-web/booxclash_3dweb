@@ -72,7 +72,7 @@ const setupSocket = (io) => {
     });
 
     // 🔥 Start Knockout Game
-    socket.on('start-knockout-game', async ({ code, subject, contentType, contentList }) => {
+    socket.on('start-knockout-game', async ({ code, subject }) => {
       try {
         const room = await Room.findOne({ code }).populate('players');
         if (!room) {
@@ -81,60 +81,44 @@ const setupSocket = (io) => {
         }
 
         room.subject = subject;
-        room.contentType = contentType;
-        room.contentList = contentList;
         room.isGameStarted = true;
         await room.save();
 
         io.to(code).emit('game-started', room.players);
-        io.to(code).emit('redirect-to-game', { code });
 
-        // ⚔️ Pair two players randomly
         const players = room.players;
         if (players.length < 2) {
           console.warn('Not enough players to start a game.');
           return;
         }
 
+        // Pair two players randomly
         const shuffled = players.sort(() => 0.5 - Math.random());
         const [player1, player2] = shuffled;
 
         const question = getRandomQuestion(subject);
 
-        // 🎯 Emit to both players the question
-        if (player1.socketId) {
-          io.to(player1.socketId).emit('new-question', {
-            question,
-            opponent: player2.name,
-            timer: 30,
-          });
-        }
+        const timer = 30;
 
-        if (player2.socketId) {
-          io.to(player2.socketId).emit('new-question', {
-            question,
-            opponent: player1.name,
-            timer: 30,
-          });
-        }
-
-        // ⏳ Timer logic — to handle answers after 30s (expand later)
-        setTimeout(() => {
-          // Placeholder — later handle answer checking
-          console.log(`Timer ended for ${player1.name} vs ${player2.name}`);
-        }, 30000);
-
-        io.in(code).emit('round-started', {
-          playersPaired: [player1.name, player2.name],
-          subject,
+        // Emit round info to everyone in room
+        io.in(code).emit('knockout-round-started', {
+          players: [player1.name, player2.name],
+          question,
+          timer,
         });
+
+        // ⏳ Future: you can track answers + eliminate here after timer
+        setTimeout(() => {
+          console.log(`⏱ Timer expired for ${player1.name} vs ${player2.name}`);
+          // Handle elimination or next round pairing
+        }, timer * 1000);
 
       } catch (err) {
         console.error('Error in start-knockout-game:', err);
       }
     });
 
-    // Optional legacy
+    // Legacy fallback
     socket.on('start-game', async (code) => {
       try {
         const room = await Room.findOne({ code }).populate('players');

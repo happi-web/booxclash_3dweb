@@ -7,6 +7,10 @@ interface Player {
   name: string;
 }
 
+interface Question {
+  question: string;
+}
+
 const contentData: Record<string, Record<string, string[]>> = {
   Math: {
     Videos: ['Intro to Fractions', 'Algebra Basics', 'Geometry Crash Course'],
@@ -25,9 +29,12 @@ const GameRoom = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [hostName, setHostName] = useState<string | null>(null);
-
   const [subject, setSubject] = useState('Math');
-  const [contentType, setContentType] = useState('Videos');
+  const [contentType, setContentType] = useState('Games');
+
+  const [currentPair, setCurrentPair] = useState<string[]>([]);
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [timer, setTimer] = useState<number | null>(null);
 
   useEffect(() => {
     const storedName = localStorage.getItem('hostName');
@@ -44,13 +51,34 @@ const GameRoom = () => {
       setPlayers(playerList);
     });
 
+    socket.on('knockout-round-started', ({ players, question, timer }) => {
+      setCurrentPair(players);
+      setQuestion(question);
+      setTimer(timer);
+
+      const countdown = setInterval(() => {
+        setTimer((prev) => {
+          if (!prev || prev <= 1) {
+            clearInterval(countdown);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    });
+
     return () => {
       socket.off('game-started');
       socket.off('update-players');
+      socket.off('knockout-round-started');
     };
   }, [code]);
 
   const contentList = contentData[subject]?.[contentType] || [];
+
+  const startKnockoutGame = () => {
+    socket.emit('start-knockout-game', { code, subject });
+  };
 
   if (!gameStarted) {
     return (
@@ -116,9 +144,7 @@ const GameRoom = () => {
             <div className="text-center">
               <button
                 className="mt-4 px-6 py-3 bg-orange-500 rounded-md text-lg hover:bg-orange-400 transition duration-300"
-                onClick={() =>
-                  socket.emit('start-game', code)
-                }
+                onClick={startKnockoutGame}
               >
                 🚀 Start Knockout Game
               </button>
@@ -145,8 +171,23 @@ const GameRoom = () => {
           )}
         </div>
 
+        {/* Knockout Round UI */}
+        {question && currentPair.length > 0 && (
+          <div className="bg-black/50 p-4 rounded-lg mt-6 text-center">
+            <h2 className="text-xl font-bold text-orange-400 mb-2">
+              Knockout Round: {currentPair[0]} vs {currentPair[1]}
+            </h2>
+            <p className="text-lg mb-2">{question.question}</p>
+            {timer !== null && (
+              <p className="text-2xl font-bold text-red-400 animate-pulse">
+                ⏱ {timer} seconds left
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Players List */}
-        <div className="mb-6">
+        <div className="mt-8">
           <h2 className="text-xl font-semibold mb-2">🧑‍🤝‍🧑 Players in this room:</h2>
           <ul className="list-disc list-inside text-lg space-y-1">
             {players.map((p) => (
