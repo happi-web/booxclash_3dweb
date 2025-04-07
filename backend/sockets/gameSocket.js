@@ -1,11 +1,41 @@
 import Room from '../models/Room.js';
 import Player from '../models/Players.js';
 
+const getRandomQuestion = (subject) => {
+  const mathQuestions = [
+    {
+      question: "What is 7 x 6?",
+      options: ["36", "42", "48", "52"],
+      answer: "42",
+    },
+    {
+      question: "Solve: 12 + 8 ÷ 4",
+      options: ["5", "14", "16", "20"],
+      answer: "14",
+    },
+  ];
+
+  const scienceQuestions = [
+    {
+      question: "What part of the plant conducts photosynthesis?",
+      options: ["Root", "Stem", "Leaf", "Flower"],
+      answer: "Leaf",
+    },
+    {
+      question: "Which gas do plants absorb?",
+      options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"],
+      answer: "Carbon Dioxide",
+    },
+  ];
+
+  const pool = subject === 'Math' ? mathQuestions : scienceQuestions;
+  return pool[Math.floor(Math.random() * pool.length)];
+};
+
 const setupSocket = (io) => {
   io.on('connection', (socket) => {
     console.log('Socket connected:', socket.id);
 
-    // When a player joins a room
     socket.on('join-room', async ({ code, name }) => {
       try {
         socket.join(code);
@@ -30,7 +60,6 @@ const setupSocket = (io) => {
       }
     });
 
-    // When a player re-joins the room
     socket.on('rejoin-room', async ({ code }) => {
       try {
         const room = await Room.findOne({ code }).populate('players');
@@ -42,7 +71,7 @@ const setupSocket = (io) => {
       }
     });
 
-    // NEW: When the host starts the knockout game
+    // 🔥 Start Knockout Game
     socket.on('start-knockout-game', async ({ code, subject, contentType, contentList }) => {
       try {
         const room = await Room.findOne({ code }).populate('players');
@@ -59,12 +88,53 @@ const setupSocket = (io) => {
 
         io.to(code).emit('game-started', room.players);
         io.to(code).emit('redirect-to-game', { code });
+
+        // ⚔️ Pair two players randomly
+        const players = room.players;
+        if (players.length < 2) {
+          console.warn('Not enough players to start a game.');
+          return;
+        }
+
+        const shuffled = players.sort(() => 0.5 - Math.random());
+        const [player1, player2] = shuffled;
+
+        const question = getRandomQuestion(subject);
+
+        // 🎯 Emit to both players the question
+        if (player1.socketId) {
+          io.to(player1.socketId).emit('new-question', {
+            question,
+            opponent: player2.name,
+            timer: 30,
+          });
+        }
+
+        if (player2.socketId) {
+          io.to(player2.socketId).emit('new-question', {
+            question,
+            opponent: player1.name,
+            timer: 30,
+          });
+        }
+
+        // ⏳ Timer logic — to handle answers after 30s (expand later)
+        setTimeout(() => {
+          // Placeholder — later handle answer checking
+          console.log(`Timer ended for ${player1.name} vs ${player2.name}`);
+        }, 30000);
+
+        io.in(code).emit('round-started', {
+          playersPaired: [player1.name, player2.name],
+          subject,
+        });
+
       } catch (err) {
         console.error('Error in start-knockout-game:', err);
       }
     });
 
-    // Optional: legacy support if using 'start-game' separately
+    // Optional legacy
     socket.on('start-game', async (code) => {
       try {
         const room = await Room.findOne({ code }).populate('players');
@@ -83,7 +153,6 @@ const setupSocket = (io) => {
       }
     });
 
-    // Handle disconnections
     socket.on('disconnect', () => {
       console.log('Socket disconnected:', socket.id);
     });
