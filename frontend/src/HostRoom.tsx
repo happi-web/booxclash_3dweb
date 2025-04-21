@@ -56,7 +56,7 @@ const HostRoom = () => {
 
   const startGame = () => {
     socket.emit('start-game', code);
-    navigate(`/game-room/${code}`);
+    navigate(`/play-ground/${code}`);
   };
 
   const canStart = includeHost ? players.length === numberOfPlayers : players.length === numberOfPlayers;

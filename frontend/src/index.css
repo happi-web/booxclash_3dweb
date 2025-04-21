@@ -3,4 +3,6 @@
 body {
     @apply bg-gradient-to-r from-blue-950 via-purple-950 to-pink-950 min-h-screen;
   }
-  
+button {
+  @apply cursor-pointer;
+}

@@ -1,0 +1,57 @@
+{
+    "Math": [
+      {
+        "question": "What is 5 + 3?",
+        "options": ["6", "7", "8", "9"],
+        "answer": "8"
+      },
+      {
+        "question": "What is 10 - 4?",
+        "options": ["5", "6", "7", "4"],
+        "answer": "6"
+      },
+      {
+        "question": "What is 2 x 3?",
+        "options": ["5", "6", "7", "8"],
+        "answer": "6"
+      },
+      {
+        "question": "What is 9 ÷ 3?",
+        "options": ["2", "3", "4", "5"],
+        "answer": "3"
+      },
+      {
+        "question": "What comes after 11?",
+        "options": ["10", "12", "13", "14"],
+        "answer": "12"
+      }
+    ],
+    "Science": [
+      {
+        "question": "What do plants need to grow?",
+        "options": ["Milk", "Juice", "Sunlight", "Soda"],
+        "answer": "Sunlight"
+      },
+      {
+        "question": "What is the color of the sky on a clear day?",
+        "options": ["Green", "Blue", "Red", "Yellow"],
+        "answer": "Blue"
+      },
+      {
+        "question": "Which sense do we use to smell?",
+        "options": ["Eyes", "Ears", "Nose", "Hands"],
+        "answer": "Nose"
+      },
+      {
+        "question": "Which animal barks?",
+        "options": ["Cat", "Dog", "Bird", "Cow"],
+        "answer": "Dog"
+      },
+      {
+        "question": "What do bees make?",
+        "options": ["Water", "Milk", "Honey", "Juice"],
+        "answer": "Honey"
+      }
+    ]
+  }
+  

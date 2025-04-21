@@ -29,7 +29,7 @@ const JoinRoom = () => {
     const handleRedirect = (data: { code?: string }) => {
       const roomCode = data.code || code || localStorage.getItem('roomCode');
       if (roomCode) {
-        navigate(`/game-room/${roomCode}`);
+        navigate(`/play-ground/${roomCode}`);
       } else {
         console.error('No valid room code for redirection');
       }
