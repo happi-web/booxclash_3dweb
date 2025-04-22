@@ -1,4 +1,3 @@
-// NavBar.tsx
 import React from "react";
 
 type NavBarProps = {
@@ -6,6 +5,7 @@ type NavBarProps = {
   setSelectedSubject: (subject: string) => void;
   selectedLevel: number;
   setSelectedLevel: (level: number) => void;
+  hasContent: boolean; // Added the hasContent prop
 };
 
 const NavBar: React.FC<NavBarProps> = ({
@@ -13,6 +13,7 @@ const NavBar: React.FC<NavBarProps> = ({
   setSelectedSubject,
   selectedLevel,
   setSelectedLevel,
+  hasContent, // Destructure the hasContent prop
 }) => {
   const subjects = ["Math", "Science"];
   const levels = [1, 2, 3, 4];
@@ -48,6 +49,11 @@ const NavBar: React.FC<NavBarProps> = ({
           ))}
         </select>
       </div>
+
+      {/* Show the message if no content is available */}
+      {hasContent && (
+        <p className="text-red-600 mt-2">No content available for {selectedSubject} - Level {selectedLevel}</p>
+      )}
     </div>
   );
 };

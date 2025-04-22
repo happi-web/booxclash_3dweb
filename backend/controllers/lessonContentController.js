@@ -10,8 +10,7 @@ export const saveLessonContent = async (req, res) => {
     explanation,
     videoLink,
     instructions,
-    materials,
-    questions,
+    componentLink,  // Use componentLink instead of materials and questions
   } = req.body;
 
   try {
@@ -24,8 +23,7 @@ export const saveLessonContent = async (req, res) => {
         explanation,
         videoLink,
         instructions,
-        materials,
-        questions,
+        componentLink,  // Store the component link
       },
       { new: true, upsert: true }
     );
@@ -79,3 +77,5 @@ export const deleteLessonContent = async (req, res) => {
     res.status(500).json({ error: "Failed to delete lesson" });
   }
 };
+
+// No need for getQuestionsByTopic anymore since we removed the questions field

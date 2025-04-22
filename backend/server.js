@@ -9,7 +9,6 @@ import connectDB from './config/db.js';
 import roomRoutes from './routes/roomRoutes.js';
 import setupSocket from './sockets/gameSocket.js';
 import authRoutes from './routes/authRoutes.js';
-
 dotenv.config();
 connectDB();
 

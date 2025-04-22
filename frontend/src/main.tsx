@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import "./index.css";
-import Hero from './GameRoom/Hero.tsx';
 import GameRoom from './GameRoom.tsx';
 import Lobby from './GameRoom/Lobby.tsx';
 import Signup from './GameRoom/SignUp.tsx';
@@ -15,6 +14,7 @@ import PlayGround from './PlayGround.tsx';
 import HomePage from './HomePage.tsx';
 import StudentDashboard from './GameRoom/Dashboard/StudentDashboard.tsx';
 import Dashboard from './Admin/Dashboard.tsx';
+import PlaceValues from './GameRoom/Dashboard/HandsOnLearning/Lessons/PlaceValues.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -28,6 +28,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/waiting-room/:code" element={<WaitingRoom />} />
         <Route path="/lobby" element={<Lobby />} />
         <Route path="/join" element={<JoinRoom />} />
+        <Route path="/place-value" element={<PlaceValues />} />
         <Route path="/app" element={<App />} />
         <Route path="/host-room" element={<HostRoom />} />
         <Route path="/join-room" element={<JoinRoom />} />

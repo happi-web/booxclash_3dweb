@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import CanvasInterface from "./CanvasInterface";
+// LessonInterface.tsx
+import React, { useEffect, useState, Suspense } from "react";
 
 type LessonInterfaceProps = {
   subject: string;
@@ -16,6 +16,7 @@ type LessonContent = {
   explanation: string;
   videoLink: string;
   instructions: string;
+  componentLink?: string;
 };
 
 const LessonInterface: React.FC<LessonInterfaceProps> = ({
@@ -27,6 +28,7 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [DynamicComponent, setDynamicComponent] = useState<React.ComponentType | null>(null);
 
   useEffect(() => {
     const fetchLessonContent = async () => {
@@ -53,23 +55,34 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
     fetchLessonContent();
   }, [subject, level, topic]);
 
+  useEffect(() => {
+    if (lessonContent?.componentLink) {
+      const loadComponent = async () => {
+        try {
+          const Component = (await import(`./Lessons/${lessonContent.componentLink}`)).default;
+          setDynamicComponent(() => Component);
+        } catch (error) {
+          console.error("Error loading component:", error);
+          setDynamicComponent(null);
+        }
+      };
+      loadComponent();
+    }
+  }, [lessonContent]);
+
   const extractYouTubeID = (url: string): string | null => {
     const regex =
       /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const match = url.match(regex);
     return match ? match[1] : null;
   };
-  
 
   if (loading) return <p className="p-4">Loading lesson content...</p>;
   if (error) return <p className="p-4 text-red-600">{error}</p>;
-
-  // Check if lessonContent is not null before rendering
   if (!lessonContent) return <p className="p-4 text-red-600">No lesson content available.</p>;
 
   return (
     <div className="flex w-full h-[calc(100vh-100px)]">
-      {/* Left Panel: KNOW / WATCH / DO */}
       <div className="w-1/2 p-6 bg-white border-r overflow-y-auto space-y-6">
         <button
           onClick={onBack}
@@ -77,16 +90,14 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
         >
           ← Back to topics
         </button>
-  
-        {/* KNOW Section */}
+
         <div>
           <h2 className="text-xl font-bold mb-2">KNOW</h2>
           <div className="bg-gray-50 p-4 rounded border">
             <p>{lessonContent.explanation}</p>
           </div>
         </div>
-  
-        {/* WATCH Section */}
+
         {lessonContent.videoLink && (
           <div>
             <h2 className="text-xl font-bold mb-2">WATCH</h2>
@@ -106,8 +117,6 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
           </div>
         )}
 
-  
-        {/* DO Section */}
         <div>
           <h2 className="text-xl font-bold mb-2">DO</h2>
           <div className="bg-gray-50 p-4 rounded border">
@@ -121,19 +130,22 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
             </ol>
           </div>
         </div>
-
       </div>
-  
-      {/* Right Panel: Interactive Canvas */}
+
       <div className="w-1/2 p-6 bg-gray-100 overflow-y-auto">
         <h2 className="text-xl font-semibold mb-2">{lessonContent.topic} Canvas</h2>
         <div className="border rounded-lg bg-white p-4 shadow min-h-[300px]">
-          <CanvasInterface/>
+          <Suspense fallback={<div>Loading activity...</div>}>
+            {DynamicComponent ? (
+              <DynamicComponent />
+            ) : (
+              <p className="text-gray-500">No interactive component available.</p>
+            )}
+          </Suspense>
         </div>
       </div>
-      </div>
+    </div>
   );
-
 };
 
 export default LessonInterface;

@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid"; // npm install uuid
-
-type Material = {
-  label: string;
-  type: "image";
-  src: string;
-};
-
-type Question = {
-  prompt: string;
-  answer: string;
-};
+import { v4 as uuidv4 } from "uuid";
 
 type Lesson = {
   id: string;
@@ -20,15 +9,13 @@ type Lesson = {
   explanation: string;
   videoLink: string;
   instructions: string;
-  materials: Material[];
-  questions: Question[];
+  componentLink: string;
 };
 
-// Only include fields that are string or number
 const fields: (keyof Pick<
   Lesson,
-  "topic" | "level" | "explanation" | "videoLink" | "instructions"
->)[] = ["topic", "level", "explanation", "videoLink", "instructions"];
+  "topic" | "level" | "explanation" | "videoLink" | "instructions" | "componentLink"
+>)[] = ["topic", "level", "explanation", "videoLink", "instructions", "componentLink"];
 
 const defaultLesson = (): Lesson => ({
   id: uuidv4(),
@@ -38,8 +25,7 @@ const defaultLesson = (): Lesson => ({
   explanation: "",
   videoLink: "",
   instructions: "",
-  materials: [],
-  questions: Array.from({ length: 5 }, () => ({ prompt: "", answer: "" })),
+  componentLink: "",
 });
 
 const ContentManagement: React.FC = () => {
@@ -65,7 +51,6 @@ const ContentManagement: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-
     setContent((prev) => ({
       ...prev,
       [name]: name === "level" ? +value : value,
@@ -116,7 +101,6 @@ const ContentManagement: React.FC = () => {
         {editingId ? "Edit Content" : "Create Content"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* ID Field */}
         <div>
           <label className="block text-sm font-medium">ID (auto-generated)</label>
           <input
@@ -128,7 +112,6 @@ const ContentManagement: React.FC = () => {
           />
         </div>
 
-        {/* Subject Dropdown */}
         <div>
           <label className="block text-sm font-medium">Subject</label>
           <select
@@ -143,7 +126,6 @@ const ContentManagement: React.FC = () => {
           </select>
         </div>
 
-        {/* Fields */}
         {fields.map((field) => (
           <div key={field}>
             <label className="block text-sm font-medium capitalize">{field}</label>
@@ -167,75 +149,6 @@ const ContentManagement: React.FC = () => {
           </div>
         ))}
 
-        {/* Upload Materials */}
-        <div>
-          <label className="block text-sm font-medium">Materials (images)</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => {
-              const files = Array.from(e.target.files || []);
-              const newMaterials: Material[] = files.map((file) => ({
-                label: file.name,
-                type: "image",
-                src: URL.createObjectURL(file),
-              }));
-
-              setContent((prev) => ({
-                ...prev,
-                materials: [...prev.materials, ...newMaterials],
-              }));
-            }}
-          />
-          <div className="mt-2 flex gap-2 flex-wrap">
-            {content.materials.map((mat, i) => (
-              <div key={i} className="border rounded p-1">
-                <img
-                  src={mat.src}
-                  alt={mat.label}
-                  className="w-16 h-16 object-cover"
-                />
-                <p className="text-xs text-center">{mat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Questions */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Lesson Questions (5)</label>
-          {content.questions.map((q, idx) => (
-            <div key={idx} className="mb-2">
-              <label className="block text-xs font-semibold">
-                Question {idx + 1}
-              </label>
-              <input
-                type="text"
-                placeholder="Prompt"
-                value={q.prompt}
-                onChange={(e) => {
-                  const updated = [...content.questions];
-                  updated[idx].prompt = e.target.value;
-                  setContent((prev) => ({ ...prev, questions: updated }));
-                }}
-                className="w-full border rounded p-1 mt-1 mb-1"
-              />
-              <input
-                type="text"
-                placeholder="Answer"
-                value={q.answer}
-                onChange={(e) => {
-                  const updated = [...content.questions];
-                  updated[idx].answer = e.target.value;
-                  setContent((prev) => ({ ...prev, questions: updated }));
-                }}
-                className="w-full border rounded p-1"
-              />
-            </div>
-          ))}
-        </div>
-
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
@@ -244,7 +157,6 @@ const ContentManagement: React.FC = () => {
         </button>
       </form>
 
-      {/* Lesson List */}
       <div className="mt-10">
         <h3 className="text-xl font-semibold mb-2">Saved Lessons</h3>
         {lessons.length === 0 ? (
@@ -257,10 +169,12 @@ const ContentManagement: React.FC = () => {
                 className="border rounded p-3 bg-gray-50 flex justify-between items-start"
               >
                 <div>
-                  <strong>{lesson.topic}</strong> ({lesson.subject} - Level{" "}
-                  {lesson.level})
+                  <strong>{lesson.topic}</strong> ({lesson.subject} - Level {lesson.level})
                   <p className="text-sm mt-1">
                     {lesson.instructions.slice(0, 100)}...
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Component Link: {lesson.componentLink}
                   </p>
                 </div>
                 <div className="space-x-2">
