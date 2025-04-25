@@ -1,28 +1,20 @@
 import mongoose from 'mongoose';
 
-const roomSchema = new mongoose.Schema({
-  code: { type: String, required: true, unique: true },
-  host: { type: String, required: true },
-  players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
-  isGameStarted: { type: Boolean, default: false },
-  numberOfPlayers: { type: Number, required: true },
-
-  questionType: {
-    type: String,
-    enum: ['Math', 'Science', 'General'],
-    required: true
-  },
-
-  difficultyLevel: {
-    type: String,
-    enum: ['Easy', 'Medium', 'Hard'],
-    required: true
-  },
-
-  // ✅ New fields to store selected quiz options
-  subject: { type: String },
-  contentType: { type: String },
-  contentList: [{ type: String }],
+const playerSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  country: { type: String, required: true },
 });
 
-export default mongoose.model('Room', roomSchema);
+const roomSchema = new mongoose.Schema({
+  roomId: { type: String, required: true, unique: true },
+  subject: { type: String, required: true },
+  level: { type: Number, required: true },
+  numPlayers: { type: Number, required: true }, // Max total players
+  hostName: { type: String, required: true },
+  hostCountry: { type: String, required: true },
+  hostIsPlayer: { type: Boolean, default: false },
+  players: [playerSchema],
+});
+
+const Room = mongoose.model('Room', roomSchema);
+export default Room;

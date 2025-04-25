@@ -1,7 +1,7 @@
 import { Router } from "express";
 import fs from "fs";
 import path from "path";
-const router = Router();
+import multer from "multer";
 
 import {
   signup,
@@ -14,28 +14,18 @@ import {
   deleteStudent,
   addStudent
 } from "../controllers/authController.js";
-import multer from "multer";
 
 import { protect } from "../middleware/authMiddleware.js";
 
-// Public routes
-router.post("/signup", signup);
-router.post("/login", login);
+const router = Router();
 
-// Protected routes
-router.get("/logout", protect, logout);
-router.get("/profile", protect, getProfile);
-router.post("/change-password", protect, changePassword);
-
-router.get('/students', getAllStudents);
-router.delete('/students:id', deleteStudent);
-router.post('/students', addStudent);
-
+// ✅ Ensure uploads directory exists
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
 }
-// Set up multer for file uploads
+
+// ✅ Multer config for image upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -49,7 +39,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
       return cb(new Error("Only image files are allowed!"), false);
@@ -58,7 +48,21 @@ const upload = multer({
   },
 });
 
-router.post("/upload-profile-pic", protect, upload.single("profilePic"), uploadProfilePic);
+// ✅ Public routes
+router.post("/signup", signup);
+router.post("/login", login);
 
+// 🔐 Protected routes
+router.get("/logout", protect, logout);
+router.get("/profile", protect, getProfile);
+router.post("/change-password", protect, changePassword);
+
+// 📚 Student management
+router.get("/students", protect, getAllStudents);
+router.delete("/students/:id", protect, deleteStudent);
+router.post("/students", protect, addStudent);
+
+// 🖼️ Profile picture upload
+router.post("/upload-profile-pic", protect, upload.single("profilePic"), uploadProfilePic);
 
 export default router;

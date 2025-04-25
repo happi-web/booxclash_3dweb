@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Profile from "../GameRoom/Dashboard/Profile";
 import StudentManagement from "./StudentManagement";
 import ContentManagement from "./ContentManagement";
+import Profile from "../StudentDashboard/Profile";
 
 const adminMenu = [
   "Profile",

@@ -7,17 +7,29 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   country: { type: String },
   city: { type: String },
-  role: { type: String, required: true },
+  role: { type: String, required: true }, // e.g., "student", "teacher", "admin"
   verified: { type: Boolean, default: false },
+  profilePic: { type: String, default: "" }, // Optional: profile picture path
 }, {
   timestamps: true,
 });
 
+// Main model
 const User = mongoose.model("User", userSchema);
 
-// Helper methods (optional, but clean)
+// Optional helper methods for reuse
 const findOne = (query) => User.findOne(query);
-const findByIdAndUpdate = (id, update) => User.findByIdAndUpdate(id, update);
+const findById = (id) => User.findById(id);
+const findByIdAndUpdate = (id, update, options = { new: true }) =>
+  User.findByIdAndUpdate(id, update, options);
+const findByIdAndDelete = (id) => User.findByIdAndDelete(id);
+const find = (filter = {}) => User.find(filter);
 
 export default User;
-export { findOne, findByIdAndUpdate };
+export {
+  findOne,
+  findById,
+  findByIdAndUpdate,
+  findByIdAndDelete,
+  find,
+};

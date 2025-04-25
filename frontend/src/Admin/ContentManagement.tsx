@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import GamesUpload from "./GamesUpload";
 
 type Lesson = {
   id: string;
@@ -156,7 +157,7 @@ const ContentManagement: React.FC = () => {
           {editingId ? "Update" : "Save"} Content
         </button>
       </form>
-
+        <GamesUpload/>
       <div className="mt-10">
         <h3 className="text-xl font-semibold mb-2">Saved Lessons</h3>
         {lessons.length === 0 ? (

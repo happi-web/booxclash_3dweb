@@ -1,0 +1,822 @@
+{
+  "math": {
+    "1": [
+      {
+        "prompt": "What is 2 + 3?",
+        "options": [
+          "4",
+          "5",
+          "6",
+          "3"
+        ],
+        "answer": "5"
+      },
+      {
+        "prompt": "Which number is smallest?",
+        "options": [
+          "1",
+          "3",
+          "5",
+          "7"
+        ],
+        "answer": "1"
+      },
+      {
+        "prompt": "How many sides does a triangle have?",
+        "options": [
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "answer": "3"
+      },
+      {
+        "prompt": "What comes after 9?",
+        "options": [
+          "10",
+          "11",
+          "8",
+          "12"
+        ],
+        "answer": "10"
+      },
+      {
+        "prompt": "What is 5 - 2?",
+        "options": [
+          "1",
+          "3",
+          "2",
+          "4"
+        ],
+        "answer": "3"
+      },
+      {
+        "prompt": "Which is an even number?",
+        "options": [
+          "1",
+          "3",
+          "4",
+          "7"
+        ],
+        "answer": "4"
+      },
+      {
+        "prompt": "How many fingers on one hand?",
+        "options": [
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "answer": "5"
+      },
+      {
+        "prompt": "What is 1 more than 6?",
+        "options": [
+          "7",
+          "8",
+          "6",
+          "9"
+        ],
+        "answer": "7"
+      },
+      {
+        "prompt": "Which shape has no corners?",
+        "options": [
+          "Circle",
+          "Square",
+          "Triangle",
+          "Rectangle"
+        ],
+        "answer": "Circle"
+      },
+      {
+        "prompt": "What is 10 - 5?",
+        "options": [
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "answer": "5"
+      }
+    ],
+    "2": [
+      {
+        "prompt": "What is 12 + 8?",
+        "options": [
+          "18",
+          "19",
+          "20",
+          "21"
+        ],
+        "answer": "20"
+      },
+      {
+        "prompt": "What is 15 - 6?",
+        "options": [
+          "9",
+          "10",
+          "11",
+          "8"
+        ],
+        "answer": "9"
+      },
+      {
+        "prompt": "Which is a multiple of 5?",
+        "options": [
+          "7",
+          "8",
+          "10",
+          "11"
+        ],
+        "answer": "10"
+      },
+      {
+        "prompt": "What is the value of 3 tens?",
+        "options": [
+          "30",
+          "3",
+          "300",
+          "13"
+        ],
+        "answer": "30"
+      },
+      {
+        "prompt": "Which shape has 4 equal sides?",
+        "options": [
+          "Square",
+          "Rectangle",
+          "Triangle",
+          "Circle"
+        ],
+        "answer": "Square"
+      },
+      {
+        "prompt": "What is 6 \u00d7 2?",
+        "options": [
+          "10",
+          "11",
+          "12",
+          "14"
+        ],
+        "answer": "12"
+      },
+      {
+        "prompt": "What is half of 10?",
+        "options": [
+          "4",
+          "5",
+          "6",
+          "3"
+        ],
+        "answer": "5"
+      },
+      {
+        "prompt": "What is 7 + 9?",
+        "options": [
+          "15",
+          "16",
+          "17",
+          "18"
+        ],
+        "answer": "16"
+      },
+      {
+        "prompt": "What is 20 divided by 4?",
+        "options": [
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "answer": "5"
+      },
+      {
+        "prompt": "Which is a right angle?",
+        "options": [
+          "90\u00b0",
+          "45\u00b0",
+          "180\u00b0",
+          "60\u00b0"
+        ],
+        "answer": "90\u00b0"
+      }
+    ],
+    "3": [
+      {
+        "prompt": "What is 7 \u00d7 8?",
+        "options": [
+          "56",
+          "48",
+          "64",
+          "54"
+        ],
+        "answer": "56"
+      },
+      {
+        "prompt": "Which number is a prime number?",
+        "options": [
+          "9",
+          "10",
+          "11",
+          "12"
+        ],
+        "answer": "11"
+      },
+      {
+        "prompt": "What is the area of a 4x5 rectangle?",
+        "options": [
+          "9",
+          "10",
+          "20",
+          "25"
+        ],
+        "answer": "20"
+      },
+      {
+        "prompt": "What is 100 \u00f7 5?",
+        "options": [
+          "15",
+          "20",
+          "25",
+          "30"
+        ],
+        "answer": "20"
+      },
+      {
+        "prompt": "What is the perimeter of a square with side 6?",
+        "options": [
+          "12",
+          "18",
+          "24",
+          "36"
+        ],
+        "answer": "24"
+      },
+      {
+        "prompt": "Which is a fraction equivalent to 1/2?",
+        "options": [
+          "2/4",
+          "2/3",
+          "3/4",
+          "1/3"
+        ],
+        "answer": "2/4"
+      },
+      {
+        "prompt": "What is 3/4 of 20?",
+        "options": [
+          "10",
+          "12",
+          "15",
+          "16"
+        ],
+        "answer": "15"
+      },
+      {
+        "prompt": "What is 10 more than 89?",
+        "options": [
+          "99",
+          "98",
+          "97",
+          "100"
+        ],
+        "answer": "99"
+      },
+      {
+        "prompt": "What is the sum of 13, 27, and 40?",
+        "options": [
+          "80",
+          "81",
+          "82",
+          "83"
+        ],
+        "answer": "80"
+      },
+      {
+        "prompt": "Round 67 to the nearest ten.",
+        "options": [
+          "60",
+          "70",
+          "65",
+          "68"
+        ],
+        "answer": "70"
+      }
+    ],
+    "4": [
+      {
+        "prompt": "What is 15% of 200?",
+        "options": [
+          "20",
+          "25",
+          "30",
+          "35"
+        ],
+        "answer": "30"
+      },
+      {
+        "prompt": "Simplify: 12/16",
+        "options": [
+          "3/4",
+          "2/3",
+          "4/5",
+          "6/8"
+        ],
+        "answer": "3/4"
+      },
+      {
+        "prompt": "What is 3\u00b2?",
+        "options": [
+          "6",
+          "8",
+          "9",
+          "12"
+        ],
+        "answer": "9"
+      },
+      {
+        "prompt": "What is the value of \u03c0 (approx)?",
+        "options": [
+          "3.14",
+          "2.17",
+          "3.41",
+          "3.21"
+        ],
+        "answer": "3.14"
+      },
+      {
+        "prompt": "Solve: 2x = 18",
+        "options": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "answer": "9"
+      },
+      {
+        "prompt": "What is 1000 \u00f7 25?",
+        "options": [
+          "30",
+          "35",
+          "40",
+          "45"
+        ],
+        "answer": "40"
+      },
+      {
+        "prompt": "Which is an improper fraction?",
+        "options": [
+          "5/4",
+          "3/5",
+          "2/3",
+          "4/7"
+        ],
+        "answer": "5/4"
+      },
+      {
+        "prompt": "Convert 0.75 to a fraction.",
+        "options": [
+          "1/2",
+          "3/4",
+          "2/3",
+          "1/4"
+        ],
+        "answer": "3/4"
+      },
+      {
+        "prompt": "What is the square root of 49?",
+        "options": [
+          "6",
+          "7",
+          "8",
+          "9"
+        ],
+        "answer": "7"
+      },
+      {
+        "prompt": "Which angle is obtuse?",
+        "options": [
+          "45\u00b0",
+          "60\u00b0",
+          "90\u00b0",
+          "120\u00b0"
+        ],
+        "answer": "120\u00b0"
+      }
+    ]
+  },
+  "science": {
+    "1": [
+      {
+        "prompt": "What do plants need to grow?",
+        "options": [
+          "Sunlight",
+          "Candy",
+          "Milk",
+          "Juice"
+        ],
+        "answer": "Sunlight"
+      },
+      {
+        "prompt": "Which is a part of a plant?",
+        "options": [
+          "Leaf",
+          "Tooth",
+          "Ear",
+          "Foot"
+        ],
+        "answer": "Leaf"
+      },
+      {
+        "prompt": "What do we breathe in?",
+        "options": [
+          "Oxygen",
+          "Water",
+          "Smoke",
+          "Dust"
+        ],
+        "answer": "Oxygen"
+      },
+      {
+        "prompt": "Which animal barks?",
+        "options": [
+          "Dog",
+          "Cat",
+          "Bird",
+          "Fish"
+        ],
+        "answer": "Dog"
+      },
+      {
+        "prompt": "Which is a sense organ?",
+        "options": [
+          "Eye",
+          "Hand",
+          "Leg",
+          "Nose"
+        ],
+        "answer": "Eye"
+      },
+      {
+        "prompt": "What color is the sky on a clear day?",
+        "options": [
+          "Blue",
+          "Red",
+          "Green",
+          "Black"
+        ],
+        "answer": "Blue"
+      },
+      {
+        "prompt": "What do bees make?",
+        "options": [
+          "Honey",
+          "Milk",
+          "Bread",
+          "Juice"
+        ],
+        "answer": "Honey"
+      },
+      {
+        "prompt": "Where do fish live?",
+        "options": [
+          "Water",
+          "Air",
+          "Sand",
+          "Tree"
+        ],
+        "answer": "Water"
+      },
+      {
+        "prompt": "Which is a fruit?",
+        "options": [
+          "Apple",
+          "Carrot",
+          "Potato",
+          "Broccoli"
+        ],
+        "answer": "Apple"
+      },
+      {
+        "prompt": "Which animal can fly?",
+        "options": [
+          "Bird",
+          "Cat",
+          "Dog",
+          "Horse"
+        ],
+        "answer": "Bird"
+      }
+    ],
+    "2": [
+      {
+        "prompt": "What part of the body helps you smell?",
+        "options": [
+          "Nose",
+          "Eye",
+          "Ear",
+          "Mouth"
+        ],
+        "answer": "Nose"
+      },
+      {
+        "prompt": "Which object gives us heat and light?",
+        "options": [
+          "Sun",
+          "Moon",
+          "Star",
+          "Cloud"
+        ],
+        "answer": "Sun"
+      },
+      {
+        "prompt": "What do you call water in gas form?",
+        "options": [
+          "Steam",
+          "Rain",
+          "Ice",
+          "Fog"
+        ],
+        "answer": "Steam"
+      },
+      {
+        "prompt": "Which of these is a solid?",
+        "options": [
+          "Book",
+          "Water",
+          "Juice",
+          "Air"
+        ],
+        "answer": "Book"
+      },
+      {
+        "prompt": "What does a thermometer measure?",
+        "options": [
+          "Temperature",
+          "Weight",
+          "Length",
+          "Speed"
+        ],
+        "answer": "Temperature"
+      },
+      {
+        "prompt": "How many planets are in the solar system?",
+        "options": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "answer": "8"
+      },
+      {
+        "prompt": "Which planet is known as the Red Planet?",
+        "options": [
+          "Mars",
+          "Venus",
+          "Earth",
+          "Jupiter"
+        ],
+        "answer": "Mars"
+      },
+      {
+        "prompt": "What helps plants make food?",
+        "options": [
+          "Leaves",
+          "Roots",
+          "Flowers",
+          "Stems"
+        ],
+        "answer": "Leaves"
+      },
+      {
+        "prompt": "Which part of the body lets us hear?",
+        "options": [
+          "Ear",
+          "Nose",
+          "Mouth",
+          "Hand"
+        ],
+        "answer": "Ear"
+      },
+      {
+        "prompt": "What does the heart do?",
+        "options": [
+          "Pumps blood",
+          "Thinks",
+          "Sees",
+          "Breathes"
+        ],
+        "answer": "Pumps blood"
+      }
+    ],
+    "3": [
+      {
+        "prompt": "Which gas do plants take in during photosynthesis?",
+        "options": [
+          "Oxygen",
+          "Carbon Dioxide",
+          "Nitrogen",
+          "Hydrogen"
+        ],
+        "answer": "Carbon Dioxide"
+      },
+      {
+        "prompt": "What part of the plant carries water from roots to leaves?",
+        "options": [
+          "Stem",
+          "Leaf",
+          "Root",
+          "Flower"
+        ],
+        "answer": "Stem"
+      },
+      {
+        "prompt": "Which planet has rings around it?",
+        "options": [
+          "Earth",
+          "Mars",
+          "Saturn",
+          "Venus"
+        ],
+        "answer": "Saturn"
+      },
+      {
+        "prompt": "What is the main source of energy for Earth?",
+        "options": [
+          "Wind",
+          "Water",
+          "Sun",
+          "Coal"
+        ],
+        "answer": "Sun"
+      },
+      {
+        "prompt": "What do you call animals that eat only plants?",
+        "options": [
+          "Carnivores",
+          "Herbivores",
+          "Omnivores",
+          "Scavengers"
+        ],
+        "answer": "Herbivores"
+      },
+      {
+        "prompt": "How many bones are in the adult human body?",
+        "options": [
+          "206",
+          "208",
+          "210",
+          "212"
+        ],
+        "answer": "206"
+      },
+      {
+        "prompt": "Which part of the human body controls all functions?",
+        "options": [
+          "Heart",
+          "Lungs",
+          "Brain",
+          "Liver"
+        ],
+        "answer": "Brain"
+      },
+      {
+        "prompt": "Which force pulls objects toward the Earth?",
+        "options": [
+          "Friction",
+          "Magnetism",
+          "Gravity",
+          "Pressure"
+        ],
+        "answer": "Gravity"
+      },
+      {
+        "prompt": "Which of these is a renewable resource?",
+        "options": [
+          "Coal",
+          "Oil",
+          "Solar Energy",
+          "Natural Gas"
+        ],
+        "answer": "Solar Energy"
+      },
+      {
+        "prompt": "Which organ helps you breathe?",
+        "options": [
+          "Heart",
+          "Liver",
+          "Lungs",
+          "Kidney"
+        ],
+        "answer": "Lungs"
+      }
+    ],
+    "4": [
+      {
+        "prompt": "What is the boiling point of water in Celsius?",
+        "options": [
+          "50\u00b0C",
+          "75\u00b0C",
+          "100\u00b0C",
+          "120\u00b0C"
+        ],
+        "answer": "100\u00b0C"
+      },
+      {
+        "prompt": "What is the chemical symbol for water?",
+        "options": [
+          "O2",
+          "CO2",
+          "H2O",
+          "HO2"
+        ],
+        "answer": "H2O"
+      },
+      {
+        "prompt": "Which part of the cell contains DNA?",
+        "options": [
+          "Nucleus",
+          "Cytoplasm",
+          "Membrane",
+          "Wall"
+        ],
+        "answer": "Nucleus"
+      },
+      {
+        "prompt": "What is the process by which plants make food?",
+        "options": [
+          "Digestion",
+          "Respiration",
+          "Photosynthesis",
+          "Transpiration"
+        ],
+        "answer": "Photosynthesis"
+      },
+      {
+        "prompt": "Which planet is closest to the Sun?",
+        "options": [
+          "Venus",
+          "Mars",
+          "Mercury",
+          "Earth"
+        ],
+        "answer": "Mercury"
+      },
+      {
+        "prompt": "What is the basic unit of life?",
+        "options": [
+          "Tissue",
+          "Organ",
+          "Cell",
+          "Organism"
+        ],
+        "answer": "Cell"
+      },
+      {
+        "prompt": "Which organ filters blood in the human body?",
+        "options": [
+          "Lungs",
+          "Liver",
+          "Heart",
+          "Kidney"
+        ],
+        "answer": "Kidney"
+      },
+      {
+        "prompt": "What do we call animals that feed on both plants and meat?",
+        "options": [
+          "Herbivores",
+          "Carnivores",
+          "Omnivores",
+          "Detritivores"
+        ],
+        "answer": "Omnivores"
+      },
+      {
+        "prompt": "Which gas do we breathe out?",
+        "options": [
+          "Oxygen",
+          "Carbon Dioxide",
+          "Hydrogen",
+          "Nitrogen"
+        ],
+        "answer": "Carbon Dioxide"
+      },
+      {
+        "prompt": "Which layer of the Earth is the hottest?",
+        "options": [
+          "Crust",
+          "Mantle",
+          "Outer Core",
+          "Inner Core"
+        ],
+        "answer": "Inner Core"
+      }
+    ]
+  }
+}

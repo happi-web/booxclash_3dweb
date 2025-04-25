@@ -8,18 +8,14 @@ export const signup = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check for existing user
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ error: "Email already used" });
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create and save new user
     const user = new User({ ...req.body, password: hashedPassword });
     await user.save();
 
-    // Optional: Don't return full user data with password
     const safeUser = {
       _id: user._id,
       email: user.email,
@@ -30,22 +26,20 @@ export const signup = async (req, res) => {
       role: user.role,
     };
 
-    // Sign JWT
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    // Set httpOnly cookie and send success response
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: false, // true in production with HTTPS
+        secure: false,
         sameSite: "lax",
-        maxAge: 3600000, // 1 hour
+        maxAge: 3600000,
       })
       .status(201)
-      .json({ message: "Signup successful", user: safeUser });
+      .json({ message: "Signup successful", user: safeUser, token });
 
   } catch (err) {
-    console.error("Signup error:", err); // Add logging
+    console.error("Signup error:", err);
     res.status(500).json({ error: "Server error during signup" });
   }
 };
@@ -62,10 +56,8 @@ export const login = async (req, res) => {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    // Log the generated token
-    console.log("Generated Token:", token); // <-- Add this line to log the token
+    console.log("Generated Token:", token);
 
-    // Clean up user object to send to frontend
     const safeUser = {
       _id: user._id,
       email: user.email,
@@ -83,15 +75,13 @@ export const login = async (req, res) => {
         sameSite: "lax",
         maxAge: 3600000,
       })
-      .json({ message: "Login successful", user: safeUser, token }); // <-- Send token to frontend as well
+      .json({ message: "Login successful", user: safeUser, token });
 
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Server error during login" });
   }
 };
-
-
 
 export const logout = (req, res) => {
   res.clearCookie("token").json({ message: "Logged out" });
@@ -103,14 +93,14 @@ export const getCurrentUser = async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (err) {
-    console.error("Error in getCurrentUser:", err); // 👈 Add this
+    console.error("Error in getCurrentUser:", err);
     res.status(500).json({ error: "Server error" });
   }
 };
 
 export const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password"); // all except password
+    const user = await User.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ error: "User not found" });
 
     res.json(user);
@@ -141,15 +131,15 @@ export const changePassword = async (req, res) => {
 };
 
 export const uploadProfilePic = async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded." });
-  }
-
-  const imageUrl = `/uploads/${req.file.filename}`;
-
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    const imageUrl = req.file.filename; // Save only filename in DB
+
     const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
+      req.user.id,
       { profilePic: imageUrl },
       { new: true }
     ).select("-password");

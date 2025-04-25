@@ -1,65 +1,103 @@
 import Room from '../models/Room.js';
-import Player from '../models/Players.js';
 
-// Create a new room
 export const createRoom = async (req, res) => {
-  const { hostName, numberOfPlayers, questionType, difficultyLevel, includeHost } = req.body;
+  try {
+    const {
+      roomId,
+      subject,
+      level,
+      numPlayers,
+      hostName,
+      hostCountry,
+      hostIsPlayer,
+      players = [],
+    } = req.body;
 
-  if (!numberOfPlayers || isNaN(numberOfPlayers)) {
-    return res.status(400).json({ error: 'Number of players is required and must be a valid number.' });
+    const existing = await Room.findOne({ roomId });
+    if (existing) {
+      return res.status(400).json({ message: 'Room already exists.' });
+    }
+
+    const initialPlayers = hostIsPlayer
+      ? [{ name: hostName, country: hostCountry }]
+      : [];
+
+    const room = await Room.create({
+      roomId,
+      subject,
+      level,
+      numPlayers,
+      hostName,
+      hostCountry,
+      hostIsPlayer,
+      players: initialPlayers,
+    });
+
+    res.status(201).json({ roomId: room.roomId });
+  } catch (error) {
+    console.error('Error creating room:', error);
+    res.status(500).json({ message: 'Server error' });
   }
+};
 
-  const code = Math.random().toString(36).substring(2, 7).toUpperCase();
+export const getRoomById = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const room = await Room.findOne({ roomId });
 
-  const room = new Room({
-    code,
-    host: hostName,
-    numberOfPlayers: parseInt(numberOfPlayers, 10),
-    questionType,
-    difficultyLevel,
-    includeHost,
-    players: [], // Initially no players
-  });
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
 
-  // Add the host to the players list if 'includeHost' is true
-  if (includeHost) {
-    const hostPlayer = new Player({ name: hostName, roomCode: code });
-    await hostPlayer.save();
-    room.players.push(hostPlayer._id);
+    res.json({
+      roomId: room.roomId,
+      subject: room.subject,
+      level: room.level,
+      numPlayers: room.numPlayers,
+      hostName: room.hostName,
+      hostCountry: room.hostCountry,
+      hostIsPlayer: room.hostIsPlayer,
+      players: room.players,
+    });
+  } catch (error) {
+    console.error('Error fetching room:', error);
+    res.status(500).json({ message: 'Server error' });
   }
-
-  await room.save();
-
-  res.json({ code });
 };
 
 
-// Join an existing room
 export const joinRoom = async (req, res) => {
-  const { name, code } = req.body;
+  const { roomId, name, country } = req.body;
 
-  // Find the room by its code
-  const room = await Room.findOne({ code }).populate('players');
-  if (!room) return res.status(404).json({ error: 'Room not found' });
-
-  // Get the current number of players in the room
-  const currentPlayerCount = room.players.length;
-
-  // Determine the maximum number of players (including host if necessary)
-  const maxPlayers = room.includeHost ? room.numberOfPlayers : room.numberOfPlayers;
-
-  // Check if the room is full
-  if (currentPlayerCount >= maxPlayers) {
-    return res.status(400).json({ error: 'Room is full' });
+  if (!roomId || !name || !country) {
+    return res.status(400).json({ message: "All fields are required." });
   }
 
-  // Create a new player and save it to the database
-  const player = new Player({ name, roomCode: code });
-  await player.save();
+  try {
+    const room = await Room.findOne({ roomId });
 
-  // Add the player to the room's players list
-  room.players.push(player._id);
-  await room.save();
+    if (!room) {
+      return res.status(404).json({ message: "Room not found." });
+    }
 
-  res.json({ success: true });
+    // Check if room is full
+    if (room.players.length >= room.numPlayers) {
+      return res.status(400).json({ message: "Room is full." });
+    }
+
+    // Check if player already exists
+    const alreadyJoined = room.players.some((player) => player.name === name);
+    if (alreadyJoined) {
+      return res.status(200).json({ message: "Player already in room." });
+    }
+
+    // Add player to the room
+    room.players.push({ name, country });
+    await room.save();
+
+    return res.status(200).json({ message: "Joined the room successfully." });
+  } catch (err) {
+    console.error("Join room error:", err);
+    return res.status(500).json({ message: "Server error. Try again later." });
+  }
 };
