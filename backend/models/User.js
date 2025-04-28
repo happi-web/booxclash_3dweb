@@ -1,18 +1,22 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  username: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  country: { type: String },
-  city: { type: String },
-  role: { type: String, required: true }, // e.g., "student", "teacher", "admin"
-  verified: { type: Boolean, default: false },
-  profilePic: { type: String, default: "" }, // Optional: profile picture path
-}, {
-  timestamps: true,
-});
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    username: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    country: { type: String },
+    city: { type: String },
+    role: { type: String, required: true }, // e.g., "student", "educator", "admin"
+    gradeLevel: { type: String }, // Optional: for students, e.g., "Grade 7" to "Grade 12"
+    verified: { type: Boolean, default: false },
+    profilePic: { type: String, default: "" }, // Optional: profile picture path
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // Main model
 const User = mongoose.model("User", userSchema);

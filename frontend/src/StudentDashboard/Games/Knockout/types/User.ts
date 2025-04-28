@@ -4,5 +4,6 @@ export interface User {
     profilePic?: string;
     country: string;
     city: string;
+    role: string;
   }
   

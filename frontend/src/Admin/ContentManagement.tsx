@@ -122,8 +122,9 @@ const ContentManagement: React.FC = () => {
             className="w-full mt-1 border rounded p-2"
           >
             <option value="Math">Math</option>
-            <option value="English">English</option>
-            <option value="Science">Science</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Physics">Physics</option>
+            <option value="Biology">Biology</option>
           </select>
         </div>
 

@@ -82,7 +82,7 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
   if (!lessonContent) return <p className="p-4 text-red-600">No lesson content available.</p>;
 
   return (
-    <div className="w-full h-[calc(100vh-100px)] bg-black text-purple-500">
+    <div className="w-full h-[calc(100vh-100px)] bg-black text-orange-400">
       {step === "START" && (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
           <button
@@ -94,7 +94,7 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
           <h1 className="text-3xl font-bold">Ready to Learn?</h1>
           <button
             onClick={() => setStep("KNOW")}
-            className="px-6 py-3 bg-purple-700 hover:bg-purple-800 rounded-lg text-purple-500 font-semibold"
+            className="px-6 py-3 bg-orange-700 hover:bg-purple-800 rounded-lg text-purple-200 font-semibold"
           >
             Start
           </button>
@@ -106,7 +106,7 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
     {/* Left: Explanation (75%) */}
     <div className="w-3/4 p-4 max-h-full bg-purple-950 overflow-auto">
       <h2 className="text-xl font-semibold mb-4">{lessonContent.topic} - Concept</h2>
-      <div className="border rounded-lg bg-white p-6 shadow whitespace-pre-line text-purple-500 leading-relaxed space-y-4">
+      <div className="border rounded-lg bg-white p-6 shadow whitespace-pre-line text-purple-950 leading-relaxed space-y-4">
         {lessonContent.explanation
           .split("\n")
           .filter((line) => line.trim() !== "")
@@ -117,9 +117,9 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
     </div>
 
     {/* Right: Summary Card (25%) */}
-    <div className="w-1/4 p-4 bg-black text-purple-500 border-l overflow-y-auto">
-      <h2 className="text-xl font-bold mb-2">Summary</h2>
-      <div className="bg-white text-purple-500 p-4 rounded mb-4 text-sm whitespace-pre-line">
+    <div className="w-1/4 p-4 bg-purple-950 text-purple-950 border-l overflow-y-auto">
+      <h2 className="text-xl font-bold mb-2 text-amber-100">Summary</h2>
+      <div className="bg-white text-purple-950 p-4 rounded mb-4 text-sm whitespace-pre-line">
         <ul className="list-disc ml-5 space-y-2">
           {lessonContent.explanation
             .split("\n")
@@ -130,22 +130,13 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
             ))}
         </ul>
       </div>
-
-      {/* Optional: Image Preview (uses topic name) */}
-      <div className="mt-4">
-        <h3 className="text-sm font-semibold mb-1">Concept Image</h3>
-        <img
-          src={`/previews/${lessonContent.topic.toLowerCase().replace(/\s/g, "-")}.png`}
-          alt="Concept visual"
-          className="w-full rounded border"
-        />
-      </div>
     </div>
 
     {/* Navigation Button */}
     <button
       onClick={() => setStep("WATCH")}
-      className="absolute bottom-6 right-6 px-6 py-3 bg-orange-600 hover:bg-orange-700 rounded text-purple-500"
+      className="absolute bottom-6 right-6 px-6 py-3 bg-orange-600 hover:bg-purple-700 rounded text-purple-100 font-bold
+"
     >
       Complete &rarr; Watch
     </button>
@@ -168,7 +159,8 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
           </div>
           <button
             onClick={() => setStep("DO")}
-            className="mt-6 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded text-purple-500"
+            className="absolute bottom-6 right-6 px-6 py-3 bg-orange-600 hover:bg-purple-700 rounded text-purple-100 font-bold
+"
           >
             Complete &rarr; Do
           </button>
@@ -204,16 +196,13 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
                   ))}
               </ol>
             </div>
-            {/* Optionally show preview image */}
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold mb-1">Preview:</h3>
-              <img
-                src={`/previews/${lessonContent.topic.toLowerCase().replace(/\s/g, "-")}.png`}
-                alt="Preview"
-                className="w-full rounded border"
-              />
-            </div>
           </div>
+          <button
+            onClick={onBack}
+            className="absolute bottom-6 right-6 px-6 py-3 bg-orange-600 hover:bg-purple-700 rounded text-purple-100 font-bold"
+          >
+            Complete &rarr; Back to Topics
+          </button>
         </div>
       )}
     </div>

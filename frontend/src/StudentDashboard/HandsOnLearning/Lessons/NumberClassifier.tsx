@@ -85,7 +85,7 @@ const NumberCardItem: React.FC<{ number: NumberCard; animate: boolean }> = ({ nu
   return (
     <div
       ref={ref}
-      className={`cursor-move mb-2 w-12 h-12 bg-blue-400 text-white rounded flex items-center justify-center transition-transform ${animate ? "animate-bounce" : ""}`}
+      className={` overflow-none cursor-move  w-auto h-4 bg-blue-400 p-1 text-white rounded flex items-center justify-center transition-transform ${animate ? "animate-bounce" : ""}`}
       style={{ 
         opacity: isDragging ? 0.5 : 1,
         transform: isDragging ? "scale(1.1)" : "scale(1)"
@@ -276,7 +276,7 @@ useEffect(() => {
         {showNext && currentIndex + 1 < questions.length && (
           <button
             onClick={handleNext}
-            className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            className="mt-0.5 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
           >
             Next Challenge
           </button>

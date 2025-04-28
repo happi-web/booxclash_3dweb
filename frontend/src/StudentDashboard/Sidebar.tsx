@@ -4,13 +4,16 @@ import HandsOnLearning from "./HandsOnLearning";
 import Games from "./Games";
 import Subscription from "./Subscription";
 import Statistics from "./Statistics";
+import StudentsLabHome from "./vsl/StudentsLabHome";
+import TeacherLabHome from "../TeacherDashboard/TeacherLabHome";
 
-type MenuItem = "Profile" | "Hands On Learning" | "Games" | "Subscription" | "Stats" | "Logout";
+type MenuItem = "Profile" | "Hands On Learning" | "Games" | "Subscription"|"Virtual Science Lab" | "Stats" | "Logout";
 
 const menuItems: MenuItem[] = [
   "Profile",
   "Hands On Learning",
   "Games",
+  "Virtual Science Lab",
   "Subscription",
   "Stats",
   "Logout",
@@ -20,6 +23,7 @@ const colors: Record<MenuItem, string> = {
   Profile: "text-purple-600",
   "Hands On Learning": "text-blue-600",
   Games: "text-orange-500",
+  "Virtual Science Lab": "text-green-500",
   Subscription: "text-blue-500",
   Stats: "text-purple-500",
   Logout: "text-red-500",
@@ -36,10 +40,12 @@ export default function Sidebar() {
         return <HandsOnLearning />;
       case "Games":
         return <Games />;
+      case "Virtual Science Lab":
+          return <StudentsLabHome/>;
       case "Subscription":
         return <Subscription />;
       case "Stats":
-        return <Statistics />;
+        return <TeacherLabHome />;
       case "Logout":
         return <div className="text-lg font-semibold text-red-500">Logging out...</div>;
       default:

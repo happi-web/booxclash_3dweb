@@ -3,11 +3,13 @@ import http from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import lessonContentRoutes from "./routes/lessonContentRoutes.js";
+import materialsToolsRoutes from "./routes/materialsTools.js";
 import { Server } from 'socket.io';
 import gameRoutes from "./routes/gamesRoutes.js";
 import connectDB from './config/db.js';
 import roomRoutes from './routes/roomRoutes.js';
 import registerGameHandlers from './sockets/gameSocket.js';
+import experimentRoutes from './routes/experimentRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import questionsRoutes from './routes/questionsRoutes.js';
 import path from 'path';
@@ -46,6 +48,7 @@ app.use("/api/games", gameRoutes);
 app.use("/api/questions", questionsRoutes);
 
 app.use("/api/lesson-content", lessonContentRoutes);
-
+app.use("/api/materials-tools", materialsToolsRoutes);
+app.use('/api/experiments', experimentRoutes);
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

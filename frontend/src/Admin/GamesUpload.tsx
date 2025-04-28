@@ -151,10 +151,14 @@ const GamesUpload = () => {
             {savedGames.map((game) => (
               <li key={game._id} className="border p-4 rounded bg-gray-50 flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                  <img
-                    src={game.imageUrl}
-                    alt={game.title}
-                    className="w-16 h-16 object-cover rounded"
+                <img
+                    src={
+                      game.imagePreview
+                        ? `http://localhost:5000/uploads/${game.imagePreview}?t=${Date.now()}`
+                        : "https://via.placeholder.com/100"
+                    }
+                    alt="Game Thumbnail"
+                    className="w-32 h-32 rounded-full border-4 border-orange-500 shadow-md object-cover"
                   />
                   <div>
                     <p className="font-semibold">{game.title}</p>

@@ -14,6 +14,7 @@ const Signup = () => {
     city: "",
     role: "educator",
     otherRole: "",
+    gradeLevel: "",
   });
 
   const handleChange = (e: { target: { name: string; value: string } }) => {
@@ -82,72 +83,88 @@ const Signup = () => {
 
   return (
     <div>
-    <Navbar />
-    <div className="flex flex-col  items-center justify-center min-h-screen bg-black text-white px-4">
-    <h2 className="text-2xl font-bold mt-20 ">Sign Up Here</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm mt-5">
-        {[
-          { name: "name", placeholder: "Full Name" },
-          { name: "username", placeholder: "Username" },
-          { name: "email", placeholder: "Email", type: "email" },
-          { name: "password", placeholder: "Password", type: "password" },
-          { name: "country", placeholder: "Country" },
-          { name: "city", placeholder: "City" },
-        ].map(({ name, placeholder, type = "text" }) => (
-          <input
-            key={name}
-            type={type}
-            name={name}
-            placeholder={placeholder}
-            value={form[name as keyof typeof form]}
+      <Navbar />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white px-4">
+        <h2 className="text-2xl font-bold mt-20">Sign Up Here</h2>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm mt-5">
+          {[
+            { name: "name", placeholder: "Full Name" },
+            { name: "username", placeholder: "Username" },
+            { name: "email", placeholder: "Email", type: "email" },
+            { name: "password", placeholder: "Password", type: "password" },
+            { name: "country", placeholder: "Country" },
+            { name: "city", placeholder: "City" },
+          ].map(({ name, placeholder, type = "text" }) => (
+            <input
+              key={name}
+              type={type}
+              name={name}
+              placeholder={placeholder}
+              value={form[name as keyof typeof form]}
+              onChange={handleChange}
+              required={["name", "username", "email", "password"].includes(name)}
+              className="p-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          ))}
+
+          {/* Grade Level Dropdown */}
+          <select
+            name="gradeLevel"
+            value={form.gradeLevel}
             onChange={handleChange}
-            required={["name", "username", "email", "password"].includes(name)}
-            className="p-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        ))}
-
-        <select
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          className="p-2 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="educator">Educator</option>
-          <option value="student">Student</option>
-          <option value="other">Other (specify)</option>
-        </select>
-
-        {form.role === "other" && (
-          <input
-            type="text"
-            name="otherRole"
-            placeholder="Specify Role"
-            value={form.otherRole}
-            onChange={handleChange}
-            className="p-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
-          />
-        )}
-
-        <button
-          type="submit"
-          className="bg-purple-600 hover:bg-purple-700 transition-colors duration-200 text-white py-2 rounded-md font-semibold"
-        >
-          Sign Up
-        </button>
-
-        <p className="text-sm text-gray-300 text-center">
-          Already have an account?{" "}
-          <span
-            className="text-blue-400 underline cursor-pointer hover:text-blue-500"
-            onClick={() => navigate("/login")}
+            className="p-2 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-green-500"
           >
-            Log in
-          </span>
-        </p>
-      </form>
-    </div>
-    </div>
+            <option value="">Select Grade Level (Optional)</option>
+            <option value="Grade 7">Grade 7</option>
+            <option value="Grade 8">Grade 8</option>
+            <option value="Grade 9">Grade 9</option>
+            <option value="Grade 10">Grade 10</option>
+            <option value="Grade 11">Grade 11</option>
+            <option value="Grade 12">Grade 12</option>
+          </select>
 
+          {/* Role Selection */}
+          <select
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+            className="p-2 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="educator">Educator</option>
+            <option value="student">Student</option>
+            <option value="other">Other (specify)</option>
+          </select>
+
+          {form.role === "other" && (
+            <input
+              type="text"
+              name="otherRole"
+              placeholder="Specify Role"
+              value={form.otherRole}
+              onChange={handleChange}
+              className="p-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          )}
+
+          <button
+            type="submit"
+            className="bg-purple-600 hover:bg-purple-700 transition-colors duration-200 text-white py-2 rounded-md font-semibold"
+          >
+            Sign Up
+          </button>
+
+          <p className="text-sm text-gray-300 text-center">
+            Already have an account?{" "}
+            <span
+              className="text-blue-400 underline cursor-pointer hover:text-blue-500"
+              onClick={() => navigate("/login")}
+            >
+              Log in
+            </span>
+          </p>
+        </form>
+      </div>
+    </div>
   );
 };
 

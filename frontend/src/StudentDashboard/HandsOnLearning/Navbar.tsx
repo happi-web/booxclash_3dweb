@@ -15,7 +15,7 @@ const NavBar: React.FC<NavBarProps> = ({
   setSelectedLevel,
   hasContent, // Destructure the hasContent prop
 }) => {
-  const subjects = ["Math", "Science"];
+  const subjects = ["Math", "Physics","Chemistry","Biology"];
   const levels = [1, 2, 3, 4];
 
   return (
@@ -36,7 +36,7 @@ const NavBar: React.FC<NavBarProps> = ({
       </div>
 
       <div>
-        <label className="mr-2 font-semibold">Level:</label>
+        <label className="mr-2 font-semibold">Form:</label>
         <select
           value={selectedLevel}
           onChange={(e) => setSelectedLevel(Number(e.target.value))}
@@ -44,7 +44,7 @@ const NavBar: React.FC<NavBarProps> = ({
         >
           {levels.map((lvl) => (
             <option key={lvl} value={lvl}>
-              Level {lvl}
+            {lvl}
             </option>
           ))}
         </select>

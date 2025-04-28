@@ -15,8 +15,11 @@ import Landing from './StudentDashboard/Games/Knockout/Landing';
 import NumberHunt from './StudentDashboard/Games/NumberHunt/NumberHunt';
 import Insolo from './StudentDashboard/Games/Insolo/Insolo';
 import PlayerWaitingRoom from './StudentDashboard/Games/Knockout/PlayersWaitingRoom';
-
 import GameRoomInfo from './StudentDashboard/Games/Knockout/GameRoomInfo';
+import StudentExperimentRoom from './StudentDashboard/vsl/StudentExperimentRoom';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import TeacherDashboard from './TeacherDashboard/TeacherDashboard';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -25,6 +28,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<HomePage />} />
         <Route path="/play-ground/:roomId" element={<PlayGround />} />
         <Route path="/dashboard/student" element={<StudentDashboard />} />
+        <Route path="/dashboard/educator" element={<TeacherDashboard />} />
         <Route path="/dashboard/admin" element={<Dashboard />} />
         <Route path="/waiting-room/:roomId" element={<WaitingRoom />} />
         <Route path="/player-waiting" element={<PlayerWaitingRoom />} />
@@ -34,6 +38,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/dashboard/student/insolo" element={<Insolo />} />
         <Route path="/landing" element={<Landing />} />
         <Route path="/room/:code" element={<WaitingRoom />} />
+        <Route
+        path="/student-experiment-room"
+        element={
+          <DndProvider backend={HTML5Backend}>
+            <StudentExperimentRoom />
+          </DndProvider>
+        }
+      />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="game-room-info/:roomId/:currentRound" element={<GameRoomInfo />} />

@@ -107,6 +107,7 @@ export default function Profile() {
             <p><span className="text-purple-400 font-bold">Email:</span> {user.email}</p>
             <p><span className="text-purple-400 font-bold">Country:</span> {user.country}</p>
             <p><span className="text-purple-400 font-bold">City:</span> {user.city}</p>
+            <p><span className="text-purple-400 font-bold">Role:</span> {user.role}</p>
           </div>
         </div>
 

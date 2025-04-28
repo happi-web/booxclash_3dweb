@@ -2,11 +2,13 @@ import { useState } from "react";
 import StudentManagement from "./StudentManagement";
 import ContentManagement from "./ContentManagement";
 import Profile from "../StudentDashboard/Profile";
+import VirtualLab from "./VirtualLab";
 
 const adminMenu = [
   "Profile",
   "Students Management",
   "Content Management",
+  "Virtual Lab",
   "Subscribers",
   "Analytics",
   "Settings",
@@ -24,6 +26,8 @@ const AdminDashboard = () => {
         return <StudentManagement/>;
       case "Content Management":
         return <ContentManagement/>;
+      case "Virtual Lab":
+          return <VirtualLab/>;
       case "Subscribers":
         return <div>Subscriber List and Plans</div>;
       case "Analytics":
