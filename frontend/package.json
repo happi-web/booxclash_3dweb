@@ -20,6 +20,7 @@
     "jwt-decode": "^4.0.0",
     "konva": "^9.3.20",
     "leva": "^0.10.0",
+    "lucide-react": "^0.503.0",
     "react": "^19.1.0",
     "react-confetti": "^6.4.0",
     "react-dnd": "^16.0.1",
@@ -30,6 +31,7 @@
     "react-router-dom": "^7.5.0",
     "socket.io-client": "^4.8.1",
     "three": "^0.175.0",
+    "use-sound": "^5.0.0",
     "uuid": "^11.1.0",
     "vanta": "^0.5.24"
   },

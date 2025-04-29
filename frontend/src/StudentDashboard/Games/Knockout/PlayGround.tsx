@@ -1,5 +1,4 @@
-
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import io from "socket.io-client";
 
@@ -15,217 +14,244 @@ interface Player {
   _id: string;
   name: string;
   country: string;
-}
-
-interface Room {
-  roomId: string;
-  subject: string;
-  level: string;
-  hostName: string;
-  hostCountry: string;
-  players: Player[];
-  numPlayers: number;
+  points?: number;
+  socketId?: string;
 }
 
 const PlayGround = () => {
   const { roomId } = useParams<{ roomId: string }>();
-  const [room, setRoom] = useState<Room | null>(null);
-  const [error, setError] = useState("");
+  const [room, setRoom] = useState<any>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [quizStarted, setQuizStarted] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [leaderboard, setLeaderboard] = useState<Player[]>([]);
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [timer, setTimer] = useState(15);
-  const [showSummary, setShowSummary] = useState(false);
+  const [showQuestion, setShowQuestion] = useState(false);
+  const [countdown, setCountdown] = useState(4);
+  const [message] = useState("ROUND 1 UNDERWAY");
+  const [quizOver, setQuizOver] = useState(false);
+  const [mySocketId, setMySocketId] = useState<string>("");
+  const [timeLeft, setTimeLeft] = useState(15); // 15 seconds per question
+  const [isAnswering, setIsAnswering] = useState(false);
 
-  const [pairings, setPairings] = useState<{ player1: Player; player2: Player }[]>([]);
-  const [currentPairsIndex, setCurrentPairsIndex] = useState(0);
-  const [eliminated, setEliminated] = useState<Player[]>([]);
-  const [winners, setWinners] = useState<Player[]>([]);
+  // Connect and receive socket ID
+  useEffect(() => {
+    socket.on("assignId", (id: string) => setMySocketId(id));
+    return () => {
+      socket.off("assignId");
+    };
+  }, []);
 
+  // Fetch room data
   useEffect(() => {
     const fetchRoom = async () => {
-      try {
-        const res = await fetch(`http://localhost:5000/api/rooms/${roomId}`);
-        if (!res.ok) throw new Error("Failed to fetch room data");
-        const data = await res.json();
-        setRoom(data);
-        pairPlayers(data.players);
-      } catch (err) {
-        console.error(err);
-        setError("Unable to load room data. Please try again.");
-      }
+      const res = await fetch(`http://localhost:5000/api/rooms/${roomId}`);
+      const data = await res.json();
+      const initialPlayers = data.players.map((p: Player) => ({ ...p, points: 0 }));
+      setRoom(data);
+      setLeaderboard(initialPlayers);
     };
-
     fetchRoom();
-
-    return () => {
-      socket.off("quizStarted");
-    };
   }, [roomId]);
 
+  // Fetch questions when room is ready
   useEffect(() => {
+    if (!room) return;
+
     const fetchQuestions = async () => {
-      if (!room) return;
       try {
         const res = await fetch(`http://localhost:5000/api/questions/${room.subject}/${room.level}`);
-        const data: Question[] = await res.json();
+        const data = await res.json();
         setQuestions(data);
-        setQuizStarted(true);
-        setLoading(false);
       } catch (err) {
-        console.error("Failed to fetch questions:", err);
-        setLoading(false);
+        console.error("❌ Failed to fetch questions:", err);
       }
     };
 
-    if (room) fetchQuestions();
+    fetchQuestions();
   }, [room]);
 
+  // Start countdown before showing first question
   useEffect(() => {
-    if (!quizStarted || questions.length === 0 || currentIndex >= questions.length) return;
-
-    setSelectedOption(null);
-    setTimer(15);
+    if (!room || questions.length === 0) return;
 
     const interval = setInterval(() => {
-      setTimer((prev) => {
+      setCountdown((prev) => {
         if (prev === 1) {
           clearInterval(interval);
-          setTimeout(() => handleNext(null), 500);
+          setShowQuestion(true);
+          setCurrentQuestion(questions[currentRoundIndex]);
+          startTimer();
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [currentIndex, questions, quizStarted]);
+  }, [room, questions, currentRoundIndex]);
 
-  const pairPlayers = (players: Player[]) => {
-    const shuffled = [...players].sort(() => Math.random() - 0.5);
-    const pairs: { player1: Player; player2: Player }[] = [];
-    for (let i = 0; i < shuffled.length; i += 2) {
-      if (shuffled[i + 1]) {
-        pairs.push({ player1: shuffled[i], player2: shuffled[i + 1] });
-      } else {
-        setWinners(prev => [...prev, shuffled[i]]);
-      }
-    }
-    setPairings(pairs);
+  // Timer for current player
+  const startTimer = () => {
+    setTimeLeft(15);
+    setIsAnswering(true);
+    
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setIsAnswering(false);
+          handleTimeUp();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
   };
 
-  const handleNext = (selected: string | null) => {
-    const pair = pairings[currentPairsIndex];
-    const correctAnswer = questions[currentIndex].answer;
+  const handleTimeUp = () => {
+    if (!currentQuestion || selectedOption) return;
 
-    const winner =
-      selected && selected === correctAnswer
-        ? pair.player1
-        : pair.player2;
-
-    const loser =
-      selected && selected !== correctAnswer
-        ? pair.player1
-        : pair.player2;
-
-    if (winner && loser) {
-      setWinners(prev => [...prev, winner]);
-      setEliminated(prev => [...prev, loser]);
-    }
-
-    if (currentPairsIndex + 1 < pairings.length) {
-      setCurrentPairsIndex(prev => prev + 1);
-      setCurrentIndex(prev => prev + 1);
-    } else {
-      if (winners.length + 1 <= 1) {
-        setShowSummary(true);
-      } else {
-        const newPlayers = winners;
-        setRoom(prev => prev ? { ...prev, players: newPlayers } : null);
-        setWinners([]);
-        setEliminated([]);
-        pairPlayers(newPlayers);
-        setCurrentPairsIndex(0);
-        setCurrentIndex(prev => prev + 1);
-      }
-    }
+    // Auto-select a random option if time runs out
+    const randomOption = currentQuestion.options[Math.floor(Math.random() * currentQuestion.options.length)];
+    handleOptionClick(randomOption);
   };
 
   const handleOptionClick = (option: string) => {
+    if (!currentQuestion || selectedOption) return;
+
     setSelectedOption(option);
-    setTimeout(() => handleNext(option), 800);
+    const currentPlayer = leaderboard[currentPlayerIndex];
+    const isCorrect = option === currentQuestion.answer;
+
+    socket.emit("playerAnswered", {
+      roomId,
+      playerId: currentPlayer._id,
+      isCorrect,
+    });
+
+    if (isCorrect) {
+      const updatedLeaderboard = leaderboard.map((p, i) =>
+        i === currentPlayerIndex ? { ...p, points: (p.points || 0) + 10 } : p
+      );
+      setLeaderboard(updatedLeaderboard);
+      socket.emit("updateLeaderboard", { roomId, leaderboard: updatedLeaderboard });
+    }
+
+    setTimeout(() => {
+      setSelectedOption(null);
+      setIsAnswering(false);
+
+      if (currentPlayerIndex + 1 >= leaderboard.length) {
+        handleElimination();
+      } else {
+        setCurrentPlayerIndex(currentPlayerIndex + 1);
+        startTimer(); // Start timer for next player
+      }
+    }, 1000);
   };
 
-  if (error) {
-    return <div className="text-red-500 text-center mt-10">{error}</div>;
-  }
+  const handleElimination = () => {
+    const maxPoints = Math.max(...leaderboard.map((p) => p.points || 0));
+    const survivors = leaderboard.filter((p) => p.points === maxPoints);
 
-  if (!room) {
-    return <div className="text-center text-orange-300 mt-10">Loading room info...</div>;
-  }
+    socket.emit("roundEnded", { roomId, survivors });
 
-  if (loading) return <div className="text-center mt-10">Loading questions...</div>;
+    if (survivors.length <= 1 || currentRoundIndex + 1 >= questions.length) {
+      setLeaderboard(survivors);
+      setQuizOver(true);
+    } else {
+      setLeaderboard(survivors);
+      setCurrentRoundIndex(currentRoundIndex + 1);
+      setCurrentPlayerIndex(0);
+      setCurrentQuestion(questions[currentRoundIndex + 1]);
+      startTimer(); // Start timer for first player in next round
+    }
+  };
 
-  if (showSummary) {
+  if (!room) return <div className="text-center mt-10 text-orange-300">Loading room info...</div>;
+
+  if (!showQuestion) {
     return (
-      <div className="p-6 max-w-xl mx-auto space-y-6 text-center">
-        <h1 className="text-3xl font-bold">🏁 Game Over</h1>
-        <p className="text-xl">Subject: {room.subject.toUpperCase()} | Level: {room.level}</p>
-        <p className="text-lg mt-4 text-green-500">🏆 Winner: {winners.length === 1 ? winners[0].name : "No winner"}</p>
-        <p className="text-red-400">❌ Eliminated: {eliminated.map(p => p.name).join(", ")}</p>
-        <button
-          className="mt-6 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
-          onClick={() => window.location.reload()}
-        >
-          Play Again
-        </button>
+      <div className="text-center mt-10 space-y-4 text-white">
+        <h1 className="text-4xl font-bold text-green-400">{message}</h1>
+        <p className="text-xl">Starting in: {countdown}s</p>
       </div>
     );
   }
 
-  const currentQuestion = questions[currentIndex];
-  const currentPair = pairings[currentPairsIndex];
+  if (quizOver) {
+    return (
+      <div className="p-6 text-center text-white space-y-4 max-w-xl mx-auto">
+        <h2 className="text-3xl font-bold text-yellow-400">🏆 Final Leaderboard</h2>
+        {leaderboard.map((player, index) => (
+          <div key={player._id} className="bg-gray-800 p-4 rounded-lg flex justify-between">
+            <span>{index + 1}. {player.name} ({player.country})</span>
+            <span className="font-bold">{player.points} pts</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const currentPlayer = leaderboard[currentPlayerIndex];
+  const isCurrentPlayer = currentPlayer.socketId === mySocketId;
 
   return (
-    <div className="p-6 max-w-xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold">🎮 Game Room: {room.roomId}</h2>
-      <p className="text-sm text-gray-500">Subject: {room.subject} | Level: {room.level}</p>
-      <div className="text-right font-mono text-gray-600 text-sm">⏳ Time left: {timer}s</div>
-
-      <div className="text-center text-xl font-bold my-4 text-orange-300">
-        🥊 {currentPair?.player1.name} vs {currentPair?.player2.name}
+    <div className="p-6 bg-gray-900 text-white rounded-2xl shadow-xl max-w-2xl mx-auto mt-10 space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-orange-400">
+          🎯 {currentPlayer.name}'s Turn ({currentPlayer.country})
+        </h2>
+        <div className="bg-blue-500 px-3 py-1 rounded-full font-bold">
+          ⏱️ {timeLeft}s
+        </div>
       </div>
 
-      <div className="border p-4 rounded-md shadow">
-        <h2 className="text-lg font-semibold">{currentIndex + 1}. {currentQuestion.prompt}</h2>
-        <ul className="mt-4 space-y-3">
-          {currentQuestion.options.map((option, i) => (
-            <li key={i}>
-              <button
-                disabled={!!selectedOption}
-                onClick={() => handleOptionClick(option)}
-                className={`w-full px-4 py-2 rounded text-left border transition-all
-                  ${selectedOption === option
-                    ? option === currentQuestion.answer
-                      ? 'bg-green-500 text-white'
-                      : 'bg-red-500 text-white'
-                    : 'bg-white hover:bg-blue-100'}`}
-              >
-                {option}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {currentQuestion && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">{currentQuestion.prompt}</h3>
+          <ul className="space-y-2">
+            {currentQuestion.options.map((option, i) => (
+              <li key={i}>
+                <button
+                  disabled={
+                    !isCurrentPlayer || 
+                    !!selectedOption || 
+                    !isAnswering
+                  }
+                  onClick={() => handleOptionClick(option)}
+                  className={`w-full px-4 py-2 rounded text-left border transition-all
+                    ${selectedOption === option
+                      ? option === currentQuestion.answer
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white'
+                      : isCurrentPlayer && isAnswering
+                        ? 'bg-blue-500 text-white hover:bg-blue-600'
+                        : 'bg-gray-500 text-white cursor-not-allowed'}
+                  `}
+                >
+                  {option}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-6">
-        <h3 className="text-xl font-semibold text-orange-300 mb-2">👥 Players</h3>
+        <h3 className="text-xl font-semibold text-orange-300 mb-2">📋 Leaderboard</h3>
         <ul className="space-y-2">
-          {room.players.map((player) => (
-            <li key={player._id} className="p-3 bg-gray-800 text-white rounded-xl flex justify-between items-center">
-              <span>{player.name}</span>
-              <span className="text-sm text-gray-400">{player.country}</span>
+          {leaderboard.map((player, index) => (
+            <li
+              key={player._id}
+              className={`p-3 rounded-xl flex justify-between items-center
+                ${index === currentPlayerIndex ? 'bg-orange-500' : 'bg-gray-800'}`}
+            >
+              <span>{player.name} ({player.country})</span>
+              <span className="text-sm font-bold">{player.points} pts</span>
             </li>
           ))}
         </ul>
@@ -235,4 +261,3 @@ const PlayGround = () => {
 };
 
 export default PlayGround;
-

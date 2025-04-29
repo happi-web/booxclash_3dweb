@@ -43,10 +43,13 @@ const HostGame = () => {
   }, []);
 
   const handleStartGame = async () => {
-    if (!subject || !level) return alert("Please fill in all fields.");
-
-    const totalPlayers = includeHost ? numPlayers - 1 : numPlayers;
-
+    if (!subject || !level || !name || !country) {
+      return alert("Please fill in all fields.");
+    }
+  
+    const isHostPlayer = includeHost;
+    const totalPlayers = isHostPlayer ? numPlayers - 1 : numPlayers;
+  
     const payload = {
       roomId,
       subject,
@@ -54,21 +57,21 @@ const HostGame = () => {
       numPlayers: totalPlayers,
       hostName: name,
       hostCountry: country,
-      hostIsPlayer: includeHost,
-      players: includeHost ? [{ name, country }] : [],
+      hostIsPlayer: isHostPlayer,
+      players: isHostPlayer ? [{ name, country }] : [],
     };
-
+  
     try {
       const res = await fetch("http://localhost:5000/api/rooms/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
+  
       if (!res.ok) throw new Error("Failed to create room");
-
+  
       const room = await res.json();
-
+  
       navigate(`/waiting-room/${room.roomId}`, {
         state: {
           roomId: room.roomId,
@@ -77,7 +80,7 @@ const HostGame = () => {
           participants: totalPlayers,
           hostName: name,
           hostCountry: country,
-          hostIsPlayer: includeHost,
+          hostIsPlayer: isHostPlayer,
         },
       });
     } catch (err) {
@@ -85,7 +88,7 @@ const HostGame = () => {
       alert("Failed to create room. Try again.");
     }
   };
-
+  
   return (
     <div className="space-y-4 p-4 bg-purple-900 rounded-xl shadow-lg max-w-md mx-auto mt-10">
       <h2 className="text-2xl font-bold text-purple-300">🎉 Host Game</h2>

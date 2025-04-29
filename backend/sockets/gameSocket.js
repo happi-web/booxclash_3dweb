@@ -1,25 +1,29 @@
-const rooms = new Map(); // Map<roomId, { players: Array<{ socketId, name, country }>, maxPlayers }>
+const rooms = new Map(); 
 
 const registerGameHandlers = (io) => {
   io.on("connection", (socket) => {
     console.log("🔌 New socket connected:", socket.id);
-
-    // Assign socket ID to client
     socket.emit("assignId", socket.id);
 
-    // Host joins the room
     socket.on("hostJoinRoom", ({ roomId, maxPlayers }) => {
       socket.join(roomId);
       console.log(`👑 Host joined room ${roomId}`);
 
       if (!rooms.has(roomId)) {
-        rooms.set(roomId, { players: [], maxPlayers });
+        rooms.set(roomId, { 
+          players: [], 
+          maxPlayers, 
+          currentQuestion: null, 
+          currentPlayerIndex: 0, 
+          roundIndex: 0,
+          questions: [],
+          currentQuestionIndex: 0
+        });
       } else {
         rooms.get(roomId).maxPlayers = maxPlayers;
       }
 
       const room = rooms.get(roomId);
-
       io.to(roomId).emit("playerListUpdate", {
         players: room.players,
         joinedCount: room.players.length,
@@ -27,120 +31,118 @@ const registerGameHandlers = (io) => {
       });
     });
 
-    // Player joins the room
     socket.on("joinRoom", ({ roomId, name, country }) => {
       const room = rooms.get(roomId);
       if (!room) {
-        console.warn(`❌ Attempt to join nonexistent room: ${roomId}`);
         socket.emit("error", { message: "Room not found." });
         return;
       }
 
       if (room.players.length >= room.maxPlayers) {
-        console.warn(`🚫 Room ${roomId} full. Rejecting player ${name}`);
         socket.emit("roomFull", { message: "Room is already full." });
         return;
       }
 
       socket.join(roomId);
-
       const alreadyJoined = room.players.find((p) => p.socketId === socket.id);
       if (!alreadyJoined) {
-        room.players.push({ socketId: socket.id, name, country });
-        console.log(`✅ ${name} joined room ${roomId}`);
+        room.players.push({ socketId: socket.id, name, country, _id: socket.id });
       }
 
-      // Broadcast updated player list
       io.to(roomId).emit("playerListUpdate", {
         players: room.players,
         joinedCount: room.players.length,
         maxPlayers: room.maxPlayers,
       });
+    });
 
-      socket.emit("playerWaiting", {
-        message: "Waiting for host to start the game...",
-        current: room.players.length,
-        max: room.maxPlayers,
-      });
+    socket.on("questionsLoaded", ({ roomId, questions }) => {
+      const room = rooms.get(roomId);
+      if (room) {
+        room.questions = questions;
+        room.currentQuestion = questions[0];
+        io.to(roomId).emit("questionUpdate", room.currentQuestion);
+      }
+    });
 
-      if (room.players.length === room.maxPlayers) {
-        console.log(`📣 Room ${roomId} is full.`);
-        io.to(roomId).emit("roomFull", {
-          message: "Room is full. Waiting for host to start...",
+    socket.on("startFirstQuestion", ({ roomId }) => {
+      const room = rooms.get(roomId);
+      if (room) {
+        room.currentQuestion = room.questions[0];
+        room.currentPlayerIndex = 0;
+        io.to(roomId).emit("questionUpdate", room.currentQuestion);
+        io.to(roomId).emit("playerTurnUpdate", {
+          playerIndex: 0,
+          roundIndex: 0
         });
       }
     });
 
-    // Host starts the game
-    socket.on("startGame", ({ roomId }) => {
+    socket.on("playerAnswered", ({ roomId, playerId, isCorrect, option }) => {
       const room = rooms.get(roomId);
-      if (room) {
-        console.log(`🎮 Game started in room ${roomId}`);
-        io.to(roomId).emit("startGame");
+      if (!room) return;
 
-        // Trigger first knockout round
-        startKnockoutRound(io, roomId, room.players);
-      } else {
-        console.warn(`⚠️ Tried to start game for nonexistent room ${roomId}`);
+      // Update player points if correct
+      if (isCorrect) {
+        const player = room.players.find(p => p._id === playerId);
+        if (player) {
+          player.points = (player.points || 0) + 10;
+        }
       }
+
+      // Move to next player or next round
+      setTimeout(() => {
+        if (room.currentPlayerIndex + 1 < room.players.length) {
+          room.currentPlayerIndex++;
+          io.to(roomId).emit("playerTurnUpdate", {
+            playerIndex: room.currentPlayerIndex,
+            roundIndex: room.roundIndex
+          });
+        } else {
+          // End of round logic
+          const maxPoints = Math.max(...room.players.map(p => p.points || 0));
+          const survivors = room.players.filter(p => (p.points || 0) === maxPoints);
+
+          if (survivors.length <= 1 || room.currentQuestionIndex + 1 >= room.questions.length) {
+            // Game over
+            io.to(roomId).emit("gameOver", { survivors });
+          } else {
+            // Next round
+            room.roundIndex++;
+            room.currentQuestionIndex++;
+            room.currentQuestion = room.questions[room.currentQuestionIndex];
+            room.currentPlayerIndex = 0;
+            room.players = survivors;
+
+            io.to(roomId).emit("questionUpdate", room.currentQuestion);
+            io.to(roomId).emit("playerTurnUpdate", {
+              playerIndex: 0,
+              roundIndex: room.roundIndex
+            });
+            io.to(roomId).emit("leaderboardUpdate", room.players);
+          }
+        }
+      }, 1000);
     });
 
-    // Continue knockout with winners
-    socket.on("startNextRound", ({ roomId, players }) => {
-      console.log(`🔁 Starting next knockout round in ${roomId} with ${players.length} players`);
-      startKnockoutRound(io, roomId, players);
+    socket.on("updateLeaderboard", ({ roomId, leaderboard }) => {
+      io.to(roomId).emit("leaderboardUpdate", leaderboard);
     });
 
     socket.on("disconnect", () => {
-      console.log("❌ Socket disconnected:", socket.id);
-
-      // Clean up player from any room
       for (const [roomId, room] of rooms) {
         const index = room.players.findIndex(p => p.socketId === socket.id);
         if (index !== -1) {
-          const removed = room.players.splice(index, 1);
-          console.log(`🧹 Removed player ${removed[0].name} from room ${roomId}`);
-
+          room.players.splice(index, 1);
           io.to(roomId).emit("playerListUpdate", {
             players: room.players,
             joinedCount: room.players.length,
             maxPlayers: room.maxPlayers,
           });
-
-          // If room is empty, delete it
-          if (room.players.length === 0) {
-            rooms.delete(roomId);
-            console.log(`🗑️ Deleted empty room ${roomId}`);
-          }
-
           break;
         }
       }
     });
-  });
-};
-
-// Utility: Knockout pairing and round logic
-const startKnockoutRound = (io, roomId, players) => {
-  const shuffled = [...players].sort(() => Math.random() - 0.5);
-  const pairs = [];
-
-  for (let i = 0; i < shuffled.length; i += 2) {
-    if (shuffled[i + 1]) {
-      pairs.push({ player1: shuffled[i], player2: shuffled[i + 1] });
-    } else {
-      // Odd player gets auto-advance (could be customized)
-      io.to(shuffled[i].socketId).emit("autoAdvance", { message: "You advance to next round!" });
-    }
-  }
-
-  pairs.forEach((pair, index) => {
-    setTimeout(() => {
-      io.to(roomId).emit("roundData", {
-        pair,
-        index
-      });
-    }, index * 20000); // space rounds every 20s
   });
 };
 
