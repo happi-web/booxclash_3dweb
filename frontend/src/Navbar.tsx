@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { navLinks } from "../../../constants/navBarLinks"; // Using the imported links
+import { navLinks } from "./constants/navBarLinks"; // Using the imported links
 
 import logo from "/logowhite.webp"; // Use .webp for smaller, faster loading
 import menuIcon from "/assets/menu.svg";
@@ -23,7 +23,7 @@ const Navbar = () => {
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md shadow-md">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-blue/70 backdrop-blur-md shadow-md">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center px-5 py-4">
           {/* Logo */}

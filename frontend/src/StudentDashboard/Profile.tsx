@@ -88,7 +88,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-950 to-black text-white flex justify-center items-center p-6">
-      <div className="w-full max-w-3xl bg-[#1a1a1a] border-2 border-purple-600 rounded-2xl shadow-xl p-8 space-y-8">
+      <div className="w-full max-w-3xl bg-blue/20 border-2 border-purple-600 rounded-2xl shadow-xl p-8 space-y-8">
         <h3 className="text-3xl font-bold text-orange-400">🎮 Gamer Profile</h3>
 
         <div className="flex flex-col md:flex-row items-center gap-6">

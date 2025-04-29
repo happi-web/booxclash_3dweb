@@ -5,7 +5,7 @@ import CanvasLoader from "./CanvasLoader"
 import { Canvas } from "@react-three/fiber"
 import { useMediaQuery } from "react-responsive"
 import { useNavigate } from "react-router-dom"
-import Navbar from './Navbar';
+import Navbar from '../../../Navbar';
 
 const Hero = () => {
     const isMobile = useMediaQuery({maxWidth:768})
@@ -14,7 +14,7 @@ const Hero = () => {
   return (
     <section className="min-h-screen w-full flex flex-col relative">
     <Navbar />
-        <div className="w-full h-138 mx-auto flex flex-col c-space gap-3 z-10   bg-black/70">
+        <div className="w-full h-138 mx-auto flex flex-col c-space gap-3 z-10  rounded-lg  p-5 sm:p-10">
             <p className="sm:text-xl text-xl font-medium  text-yellow-200 text-center mt-40  w-100 h-10 mx-auto z-10 font-generalsans">
                 Hi Welcome To BooxClash!
             </p>

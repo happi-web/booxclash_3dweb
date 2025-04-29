@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./StudentDashboard/Games/Knockout/Navbar";
+import Navbar from "./Navbar";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ const Login = () => {
   return (
     <div>
     <Navbar />
-    <div className="flex flex-col  items-center justify-center min-h-screen bg-black text-white px-4">
+    <div className="flex flex-col  items-center justify-center min-h-screen bg-blue/70 text-white px-4">
       <h2 className="text-2xl font-bold mb-6">Login Here</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-80">
         <input

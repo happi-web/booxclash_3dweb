@@ -1,9 +1,9 @@
 import { useState } from "react";
 import Profile from "./Profile";
+import "../index.css";
 import HandsOnLearning from "./HandsOnLearning";
 import Games from "./Games";
 import Subscription from "./Subscription";
-import Statistics from "./Statistics";
 import StudentsLabHome from "./vsl/StudentsLabHome";
 import TeacherLabHome from "../TeacherDashboard/TeacherLabHome";
 
@@ -54,7 +54,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen font-sans bg-black text-white">
+    <div className="flex flex-col md:flex-row min-h-screen font-sans bg-blue/70 text-white">
       {/* Sidebar */}
       <aside className="w-full md:w-64 bg-white text-black shadow-xl rounded-none md:rounded-tr-3xl md:rounded-br-3xl p-6">
         <h2 className="text-2xl font-extrabold mb-6 text-purple-700">🎮 My Fun Space</h2>

@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
 @import "tailwindcss";
-/* index.css or global.css */
+
 body {
-    @apply bg-gradient-to-r from-blue-950 via-purple-950 to-pink-950 min-h-screen;
-  }
+  font-family: 'Poppins', sans-serif;
+  @apply bg-gradient-to-r from-blue-950 via-purple-950 to-pink-950 min-h-screen;
+}
+
 button {
   @apply cursor-pointer;
 }

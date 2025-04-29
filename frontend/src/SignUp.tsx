@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./StudentDashboard/Games/Knockout/Navbar";
+import Navbar from "./Navbar";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ const Signup = () => {
   return (
     <div>
       <Navbar />
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white px-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-blue/70 text-white px-4">
         <h2 className="text-2xl font-bold mt-20">Sign Up Here</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm mt-5">
           {[
@@ -103,7 +103,7 @@ const Signup = () => {
               value={form[name as keyof typeof form]}
               onChange={handleChange}
               required={["name", "username", "email", "password"].includes(name)}
-              className="p-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="p-1 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           ))}
 
@@ -112,7 +112,7 @@ const Signup = () => {
             name="gradeLevel"
             value={form.gradeLevel}
             onChange={handleChange}
-            className="p-2 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="p-1 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             <option value="">Select Grade Level (Optional)</option>
             <option value="Grade 7">Grade 7</option>
@@ -128,7 +128,7 @@ const Signup = () => {
             name="role"
             value={form.role}
             onChange={handleChange}
-            className="p-2 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-1 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="educator">Educator</option>
             <option value="student">Student</option>
@@ -142,7 +142,7 @@ const Signup = () => {
               placeholder="Specify Role"
               value={form.otherRole}
               onChange={handleChange}
-              className="p-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="p-1 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           )}
 

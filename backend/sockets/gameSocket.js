@@ -1,4 +1,4 @@
-const rooms = new Map(); 
+const rooms = new Map();
 
 const registerGameHandlers = (io) => {
   io.on("connection", (socket) => {
@@ -10,11 +10,11 @@ const registerGameHandlers = (io) => {
       console.log(`👑 Host joined room ${roomId}`);
 
       if (!rooms.has(roomId)) {
-        rooms.set(roomId, { 
-          players: [], 
-          maxPlayers, 
-          currentQuestion: null, 
-          currentPlayerIndex: 0, 
+        rooms.set(roomId, {
+          players: [],
+          maxPlayers,
+          currentQuestion: null,
+          currentPlayerIndex: 0,
           roundIndex: 0,
           questions: [],
           currentQuestionIndex: 0
@@ -54,6 +54,8 @@ const registerGameHandlers = (io) => {
         joinedCount: room.players.length,
         maxPlayers: room.maxPlayers,
       });
+
+      socket.emit("playerWaiting");
     });
 
     socket.on("questionsLoaded", ({ roomId, questions }) => {
@@ -61,28 +63,37 @@ const registerGameHandlers = (io) => {
       if (room) {
         room.questions = questions;
         room.currentQuestion = questions[0];
-        io.to(roomId).emit("questionUpdate", room.currentQuestion);
+        room.currentQuestionIndex = 0;
       }
     });
 
-    socket.on("startFirstQuestion", ({ roomId }) => {
+    socket.on("startGame", ({ roomId }) => {
       const room = rooms.get(roomId);
-      if (room) {
-        room.currentQuestion = room.questions[0];
-        room.currentPlayerIndex = 0;
-        io.to(roomId).emit("questionUpdate", room.currentQuestion);
-        io.to(roomId).emit("playerTurnUpdate", {
-          playerIndex: 0,
-          roundIndex: 0
-        });
-      }
+      if (!room || room.players.length === 0 || room.questions.length === 0) return;
+
+      room.currentQuestionIndex = 0;
+      room.roundIndex = 0;
+      room.currentPlayerIndex = 0;
+      room.currentQuestion = room.questions[0];
+
+      io.to(roomId).emit("gameStarted", {
+        players: room.players,
+        maxPlayers: room.maxPlayers,
+        currentQuestion: room.currentQuestion,
+      });
+
+      io.to(roomId).emit("questionUpdate", room.currentQuestion);
+      io.to(roomId).emit("playerTurnUpdate", {
+        playerIndex: 0,
+        roundIndex: 0
+      });
+      io.to(roomId).emit("leaderboardUpdate", room.players);
     });
 
     socket.on("playerAnswered", ({ roomId, playerId, isCorrect, option }) => {
       const room = rooms.get(roomId);
       if (!room) return;
 
-      // Update player points if correct
       if (isCorrect) {
         const player = room.players.find(p => p._id === playerId);
         if (player) {
@@ -90,7 +101,6 @@ const registerGameHandlers = (io) => {
         }
       }
 
-      // Move to next player or next round
       setTimeout(() => {
         if (room.currentPlayerIndex + 1 < room.players.length) {
           room.currentPlayerIndex++;
@@ -99,15 +109,12 @@ const registerGameHandlers = (io) => {
             roundIndex: room.roundIndex
           });
         } else {
-          // End of round logic
           const maxPoints = Math.max(...room.players.map(p => p.points || 0));
           const survivors = room.players.filter(p => (p.points || 0) === maxPoints);
 
           if (survivors.length <= 1 || room.currentQuestionIndex + 1 >= room.questions.length) {
-            // Game over
             io.to(roomId).emit("gameOver", { survivors });
           } else {
-            // Next round
             room.roundIndex++;
             room.currentQuestionIndex++;
             room.currentQuestion = room.questions[room.currentQuestionIndex];

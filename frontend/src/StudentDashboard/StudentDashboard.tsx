@@ -1,4 +1,5 @@
 import Sidebar from "./Sidebar";
+import "../index.css";
 
 export default function Dashboard() {
   return (
