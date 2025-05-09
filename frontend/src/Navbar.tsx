@@ -13,14 +13,22 @@ const Navbar = () => {
   const NavItems = () => (
     <ul className="nav-ul flex flex-col sm:flex-row text-white font-bold gap-4 sm:gap-5">
       {navLinks.map(({ id, href, name }) => (
-        <li key={id} className="nav-li border-2 border-white px-4 py-2 rounded">
-          <Link to={href} className="nav-li_a" onClick={() => setIsOpen(false)}>
+        <li
+          key={id}
+          className="nav-li border-2 border-white px-4 py-2 rounded transition duration-200 hover:bg-white hover:text-blue-600"
+        >
+          <Link
+            to={href}
+            className="nav-li_a block w-full h-full"
+            onClick={() => setIsOpen(false)}
+          >
             {name}
           </Link>
         </li>
       ))}
     </ul>
   );
+  
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-blue/70 backdrop-blur-md shadow-md">

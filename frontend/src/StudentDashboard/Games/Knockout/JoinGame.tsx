@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import socket from "../../../socket";
+import socket from "../../../../socket";
 import { useNavigate } from "react-router-dom";
 
 const JoinGame = () => {
@@ -66,12 +66,12 @@ const JoinGame = () => {
       setErrorMessage(""); // clear error in case it's previously set
     };
   
-    socket.on("startGame", handleStartGame);
+    socket.on("gameStarting", handleStartGame);
     socket.on("roomFull", handleRoomFull);
     socket.on("playerWaiting", handlePlayerWaiting);
   
     return () => {
-      socket.off("startGame", handleStartGame);
+      socket.off("gameStarting", handleStartGame);
       socket.off("roomFull", handleRoomFull);
       socket.off("playerWaiting", handlePlayerWaiting);
     };

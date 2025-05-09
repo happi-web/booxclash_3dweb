@@ -8,7 +8,6 @@ const generateRoomId = () => {
 const HostGame = () => {
   const [roomId, setRoomId] = useState("");
   const [subject, setSubject] = useState("math");
-  const [level, setLevel] = useState(1); // Level is now a number
   const [numPlayers, setNumPlayers] = useState(4);
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
@@ -43,40 +42,38 @@ const HostGame = () => {
   }, []);
 
   const handleStartGame = async () => {
-    if (!subject || !level || !name || !country) {
+    if (!subject || !name || !country) {
       return alert("Please fill in all fields.");
     }
-  
+
     const isHostPlayer = includeHost;
     const totalPlayers = isHostPlayer ? numPlayers - 1 : numPlayers;
-  
+
     const payload = {
       roomId,
       subject,
-      level,
       numPlayers: totalPlayers,
       hostName: name,
       hostCountry: country,
       hostIsPlayer: isHostPlayer,
       players: isHostPlayer ? [{ name, country }] : [],
     };
-  
+
     try {
       const res = await fetch("http://localhost:5000/api/rooms/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
+
       if (!res.ok) throw new Error("Failed to create room");
-  
+
       const room = await res.json();
-  
+
       navigate(`/waiting-room/${room.roomId}`, {
         state: {
           roomId: room.roomId,
           subject,
-          level,
           participants: totalPlayers,
           hostName: name,
           hostCountry: country,
@@ -88,7 +85,7 @@ const HostGame = () => {
       alert("Failed to create room. Try again.");
     }
   };
-  
+
   return (
     <div className="space-y-4 p-4 bg-purple-900 rounded-xl shadow-lg max-w-md mx-auto mt-10">
       <h2 className="text-2xl font-bold text-purple-300">🎉 Host Game</h2>
@@ -119,21 +116,6 @@ const HostGame = () => {
         >
           <option value="math">Math</option>
           <option value="science">Science</option>
-        </select>
-      </div>
-
-      <div>
-        <label className="block mb-1 text-white">Level</label>
-        <select
-          value={level}
-          onChange={(e) => setLevel(Number(e.target.value))}
-          className="w-full px-4 py-2 bg-gray-800 text-white rounded-md"
-        >
-          {[1, 2, 3].map((lvl) => (
-            <option key={lvl} value={lvl}>
-              {lvl}
-            </option>
-          ))}
         </select>
       </div>
 

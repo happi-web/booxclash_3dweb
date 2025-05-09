@@ -1,216 +1,286 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 
-type Question = {
-  prompt: string;
+interface Question {
+  question: string;
   options: string[];
-  answer: string;
-};
-
-interface QuestionsPageProps {
-  subject: string;
-  level: string;
+  correctAnswer: string;
 }
 
-const QuestionsPage: React.FC<QuestionsPageProps> = ({ subject, level }) => {
-  const [quizStarted, setQuizStarted] = useState(false);
+interface Player {
+  id: string;
+  name: string;
+}
+
+const roomId = "abc123"; // <-- Replace with dynamic routing later
+
+const shuffle = <T,>(arr: T[]): T[] => arr.sort(() => Math.random() - 0.5);
+
+const PlayGround: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [roundPool, setRoundPool] = useState<Player[]>([]);
+  const [, setWinners] = useState<Player[]>([]);
+  const [currentPair, setCurrentPair] = useState<Player[]>([]);
+  const [scores, setScores] = useState<Record<string, number>>({});
+  const [currentRound, setCurrentRound] = useState(1);
+  const [currentPlayerTurn, setCurrentPlayerTurn] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [stageCountdown, setStageCountdown] = useState(0);
   const [timer, setTimer] = useState(15);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [showSummary, setShowSummary] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const [room, setRoom] = useState<any>(null);
+  const [message, setMessage] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [eliminated, setEliminated] = useState<Record<string, number>>({});
+  const [phase, setPhase] = useState<"intro" | "countdown" | "question" | "result" | "done">("intro");
+
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shownStages = useRef({ 1: false, 2: false, final: false });
 
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const fetchGameData = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/questions/${subject}/${level}`);
-        const data: Question[] = await res.json();
-        setQuestions(data);
-        setQuizStarted(true);
-        setLoading(false);
+        const roomRes = await fetch(`http://localhost:5000/api/rooms/${roomId}`);
+        const roomData = await roomRes.json();
+
+        setRoom(roomData);
+        setPlayers(shuffle(roomData.players));
+        setRoundPool(shuffle(roomData.players));
+
+        const qRes = await fetch(`http://localhost:5000/api/questions/${roomData.subject}/${roomData.level}`);
+        const qData = await qRes.json();
+
+        setQuestions(qData);
       } catch (err) {
-        console.error("Failed to fetch questions:", err);
-        setLoading(false);
+        console.error("Error fetching room or questions:", err);
       }
     };
 
-    fetchQuestions();
-  }, [subject, level]);
+    fetchGameData();
+  }, []);
 
   useEffect(() => {
-    if (!quizStarted || questions.length === 0 || currentIndex >= questions.length) return;
+    if (phase === "intro") handleStageIntro();
+    else if (phase === "countdown") startCountdown();
+    else if (phase === "question") startQuestion();
+  }, [phase]);
+  
+  useEffect(() => {
+    if (phase === "intro") {
+      handleStageIntro();
+    } else if (phase === "countdown") {
+      startCountdown();
+    } else if (phase === "question") {
+      startQuestion();
+    }
+  }, [phase]);
 
-    setSelectedOption(null);
-    setTimer(15);
+  const handleStageIntro = () => {
+    let text = "";
+    let delay = 5;
+
+    if (currentRound === 1 && !shownStages.current[1]) {
+      text = "🎯 Round 1 Underway: Knockout Stage";
+      shownStages.current[1] = true;
+    } else if (currentRound === 2 && !shownStages.current[2]) {
+      text = "🔥 Round 2 Underway: Semi-Finals";
+      shownStages.current[2] = true;
+    } else if (currentRound >= 3 && !shownStages.current.final) {
+      text = "🏆 The Finals Begin: Only One Will Triumph!";
+      delay = 10;
+      shownStages.current.final = true;
+    }
+
+    setMessage(text);
+    setStageCountdown(delay);
 
     const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev === 1) {
+      setStageCountdown(prev => {
+        if (prev <= 1) {
           clearInterval(interval);
-          setTimeout(() => handleNext(null), 500);
+          setPhase("countdown");
         }
         return prev - 1;
       });
     }, 1000);
+  };
 
-    return () => clearInterval(interval);
-  }, [currentIndex, questions, quizStarted]);
+  const startCountdown = () => {
+    setCountdown(5);
+    countdownRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownRef.current!);
+          setPhase("question");
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
-  const handleNext = (selected: string | null) => {
-    if (selected && selected === questions[currentIndex].answer) {
-      setCorrectCount((c) => c + 1);
-    }
+  const startQuestion = () => {
+    setTimer(15);
+    const q = questions[Math.floor(Math.random() * questions.length)];
+    setQuestion(q);
 
-    if (currentIndex + 1 >= questions.length) {
-      setShowSummary(true);
+    timerRef.current = setInterval(() => {
+      setTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          handleAnswer(null);
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleAnswer = (answer: string | null) => {
+    clearInterval(timerRef.current!);
+    const currentPlayer = currentPair[currentPlayerTurn];
+    const correct = question?.correctAnswer === answer;
+    const updatedScores = { ...scores };
+
+    if (correct) updatedScores[currentPlayer.id] = (updatedScores[currentPlayer.id] || 0) + 1;
+    setScores(updatedScores);
+    setFeedback(`${currentPlayer.name} answered ${correct ? "✅ Correct!" : "❌ Wrong or Timeout!"}`);
+
+    const nextTurn = (currentPlayerTurn + 1) % 2;
+    setCurrentPlayerTurn(nextTurn);
+
+    setTimeout(() => {
+      if (nextTurn === 0) {
+        const newIndex = currentQuestionIndex + 1;
+        setCurrentQuestionIndex(newIndex);
+        if (newIndex >= 3) {
+          evaluatePair(updatedScores);
+        } else {
+          setPhase("countdown");
+        }
+      } else {
+        setPhase("countdown");
+      }
+    }, 1500);
+  };
+
+  const evaluatePair = (scoresMap: Record<string, number>) => {
+    const [p1, p2] = currentPair;
+    const p1Score = scoresMap[p1.id] || 0;
+    const p2Score = scoresMap[p2.id] || 0;
+
+    let advancing: Player;
+    let eliminatedPlayer: Player;
+
+    if (p1Score <= 1 && p2Score <= 1) {
+      advancing = Math.random() < 0.5 ? p1 : p2;
+    } else if (p1Score > p2Score) {
+      advancing = p1;
     } else {
-      setCurrentIndex((i) => i + 1);
+      advancing = p2;
+    }
+
+    eliminatedPlayer = advancing === p1 ? p2 : p1;
+
+    setPlayers(prev => [...prev, advancing]);
+    setEliminated(prev => ({
+      ...prev,
+      [eliminatedPlayer.name]: (prev[eliminatedPlayer.name] || 0) + 1,
+    }));
+
+    if (currentRound >= 3) {
+      setMessage(`🎉 Congratulations, ${advancing.name}!\n🏆 You are the Ultimate Champion!\n💔 ${eliminatedPlayer.name} made it to the finals.`);
+      setPhase("done");
+    } else {
+      setMessage(`✅ ${advancing.name} advances!\n❌ ${eliminatedPlayer.name} is eliminated.`);
+      setTimeout(() => {
+        nextPair();
+        setPhase("intro");
+      }, 2500);
     }
   };
 
-  const handleOptionClick = (option: string) => {
-    setSelectedOption(option);
-    setTimeout(() => handleNext(option), 800);
+  const nextPair = () => {
+    const pool = [...roundPool];
+    if (pool.length < 2) {
+      const newRoundPlayers = [...players];
+      setWinners([]);
+      setPlayers([]);
+      setRoundPool(newRoundPlayers);
+      setCurrentRound(prev => prev + 1);
+      return;
+    }
+
+    const pair = [pool.shift()!, pool.shift()!];
+    setCurrentPair(pair);
+    setRoundPool(pool);
+    setScores({});
+    setCurrentQuestionIndex(0);
+    setCurrentPlayerTurn(0);
   };
 
-  if (loading) return <div>Loading questions...</div>;
+  // Start initial pair after load
+  useEffect(() => {
+    if (roundPool.length >= 2 && currentPair.length === 0) {
+      nextPair();
+    }
+  }, [roundPool]);
 
-  if (showSummary) {
-    const total = questions.length;
-    const percentage = ((correctCount / total) * 100).toFixed(1);
-    return (
-      <div className="p-6 max-w-xl mx-auto space-y-6 text-center">
-        <h1 className="text-3xl font-bold">Quiz Summary</h1>
-        <p className="text-xl">Subject: {subject.toUpperCase()} | Level: {level}</p>
-        <p className="text-lg mt-4">✅ Correct Answers: {correctCount} / {total}</p>
-        <p className="text-lg">📊 Score: {percentage}%</p>
-        <button
-          className="mt-6 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
-          onClick={() => window.location.reload()}
-        >
-          Play Again
-        </button>
-      </div>
-    );
-  }
-
-  const currentQuestion = questions[currentIndex];
-
-  if (!currentQuestion) {
-    return <div className="text-center mt-10 text-yellow-400">Loading question...</div>;
-  }
-  
   return (
-    <div className="p-6 max-w-xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Quiz: {subject.toUpperCase()} - {level}</h1>
-      <div className="text-right font-mono text-gray-600 text-sm">⏳ Time left: {timer}s</div>
-  
-      <div className="border p-4 rounded-md shadow">
-        <h2 className="text-lg font-semibold">{currentIndex + 1}. {currentQuestion.prompt}</h2>
-        <ul className="mt-4 space-y-3">
-          {currentQuestion.options.map((option, i) => (
-            <li key={i}>
+    <div className="p-6 max-w-xl mx-auto">
+      {phase === "intro" && (
+        <div>
+          <h2 className="text-xl font-bold text-yellow-400">{message}</h2>
+          <p className="text-4xl font-bold">{stageCountdown}</p>
+        </div>
+      )}
+      {phase === "countdown" && (
+        <div>
+          <h2 className="text-lg font-bold text-orange-400">
+            Round {currentRound}: {currentPair[0]?.name} 🆚 {currentPair[1]?.name}
+          </h2>
+          <p className="text-2xl mt-4">⏳ Get ready!</p>
+          <p className="text-4xl font-bold mt-2">{countdown}</p>
+        </div>
+      )}
+      {phase === "question" && question && (
+        <div>
+          <h2 className="text-lg font-bold text-orange-400">
+            Round {currentRound}: {currentPair[0]?.name} 🆚 {currentPair[1]?.name}
+          </h2>
+          <p className="text-xl mt-4">{question.question}</p>
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            {question.options.map(opt => (
               <button
-                disabled={!!selectedOption}
-                onClick={() => handleOptionClick(option)}
-                className={`w-full px-4 py-2 rounded text-left border transition-all
-                  ${selectedOption === option
-                    ? option === currentQuestion.answer
-                      ? 'bg-green-500 text-white'
-                      : 'bg-red-500 text-white'
-                    : 'bg-white hover:bg-blue-100'}
-                `}
+                key={opt}
+                className="btn bg-green-300"
+                onClick={() => handleAnswer(opt)}
               >
-                {option}
+                {opt}
               </button>
-            </li>
+            ))}
+          </div>
+          <p className="mt-4 text-sm">⏱ {timer} seconds left</p>
+          <p className="mt-2">{currentPair[0]?.name}: {scores[currentPair[0]?.id] || 0} | {currentPair[1]?.name}: {scores[currentPair[1]?.id] || 0}</p>
+          <p className="mt-2 text-blue-500">{feedback}</p>
+        </div>
+      )}
+      {phase === "done" && (
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-yellow-400">{message}</h2>
+        </div>
+      )}
+      <div className="mt-6">
+        <h3 className="font-bold text-green-400">Advancing:</h3>
+        <ul>
+          {players.map(p => (
+            <li key={p.id}>{p.name}</li>
           ))}
         </ul>
-      </div>
-    </div>
-  );
-  
-};
-
-export default QuestionsPage;
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import io from "socket.io-client";
-import QuestionsPage from "./QuestionsPage";
-
-const socket = io("http://localhost:5000");
-
-const PlayGround = () => {
-  const { roomId } = useParams<{ roomId: string }>();
-
-  interface Room {
-    roomId: string;
-    subject: string;
-    level: string;
-    hostName: string;
-    hostCountry: string;
-    players: { _id: string; name: string; country: string }[];
-    numPlayers: number;
-  }
-
-  const [room, setRoom] = useState<Room | null>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fetchRoom = async () => {
-      try {
-        const res = await fetch(`http://localhost:5000/api/rooms/${roomId}`);
-        if (!res.ok) throw new Error("Failed to fetch room data");
-        const data = await res.json();
-        setRoom(data);
-      } catch (err) {
-        console.error(err);
-        setError("Unable to load room data. Please try again.");
-      }
-    };
-
-    fetchRoom();
-
-    return () => {
-      socket.off("quizStarted");
-    };
-  }, [roomId]);
-
-  if (error) {
-    return <div className="text-red-500 text-center mt-10">{error}</div>;
-  }
-
-  if (!room) {
-    return <div className="text-center text-orange-300 mt-10">Loading room info...</div>;
-  }
-
-  return (
-    <div className="p-6 bg-gray-900 text-white rounded-2xl shadow-xl max-w-2xl mx-auto mt-10 space-y-6">
-      <h2 className="text-3xl font-bold text-orange-400 text-center">🎮 Game Room: {room.roomId}</h2>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p><strong>Subject:</strong> {room.subject}</p>
-          <p><strong>Level:</strong> {room.level}</p>
-        </div>
-        <div>
-          <p><strong>Host:</strong> {room.hostName} ({room.hostCountry})</p>
-          <p><strong>Players:</strong> {room.players.length} / {room.numPlayers}</p>
-        </div>
-      </div>
-
-      <div className="mt-4">
-        <h3 className="text-xl font-semibold text-orange-300 mb-2">👥 Players</h3>
-        <ul className="space-y-2">
-          {room.players.map((player) => (
-            <li
-              key={player._id}
-              className="p-3 bg-gray-800 rounded-xl flex justify-between items-center"
-            >
-              <span>{player.name}</span>
-              <span className="text-sm text-gray-400">{player.country}</span>
-            </li>
+        <h3 className="font-bold text-red-400 mt-4">Eliminated:</h3>
+        <ul>
+          {Object.entries(eliminated).map(([name, count]) => (
+            <li key={name}>{name} (x{count})</li>
           ))}
         </ul>
       </div>

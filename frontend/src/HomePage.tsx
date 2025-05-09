@@ -53,7 +53,7 @@ const HomePage = () => {
 
       <div className="z-10 w-full max-w-5xl px-6 py-24 text-center ">
         <h1 className="text-5xl md:text-6xl font-bold mb-6 drop-shadow-lg">
-          Clash Minds. Learn Fast.
+          Clash Minds || Learn Fast.
         </h1>
         <p className="text-xl md:text-2xl mb-10 font-md drop-shadow">
           BooxClash turns learning into an epic game of knowledge, skill, and fun.

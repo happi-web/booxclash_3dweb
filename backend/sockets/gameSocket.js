@@ -1,155 +1,276 @@
-const rooms = new Map();
+import fs from 'fs';
 
+const rooms = new Map(); // roomId -> { players, maxPlayers, currentPlayerIndex, scores, answers, round, questionTimer }
+const questionsDB = JSON.parse(fs.readFileSync('./data/questions.json', 'utf-8'));
+
+/**
+ * Utility: Sanitize player list to remove invalid/undefined players
+ */
+const sanitizePlayerList = (room) => {
+  if (!room || !Array.isArray(room.players)) return;
+
+  const originalLength = room.players.length;
+  room.players = room.players.filter(p => p && p.socketId);
+  if (room.players.length !== originalLength) {
+    console.warn(`⚠️ Removed ${originalLength - room.players.length} invalid player(s) from room.`);
+  }
+};
+
+/**
+ * Registers Socket.IO game event handlers
+ */
 const registerGameHandlers = (io) => {
   io.on("connection", (socket) => {
-    console.log("🔌 New socket connected:", socket.id);
+    console.log("🔌 Connected:", socket.id);
     socket.emit("assignId", socket.id);
 
-    socket.on("hostJoinRoom", ({ roomId, maxPlayers }) => {
+    socket.on("hostJoinRoom", ({ roomId, maxPlayers, hostName, hostCountry }) => {
       socket.join(roomId);
-      console.log(`👑 Host joined room ${roomId}`);
-
+      const hostPlayer = { socketId: socket.id, name: hostName, country: hostCountry };
+    
       if (!rooms.has(roomId)) {
         rooms.set(roomId, {
-          players: [],
+          players: [hostPlayer],
           maxPlayers,
-          currentQuestion: null,
           currentPlayerIndex: 0,
-          roundIndex: 0,
-          questions: [],
-          currentQuestionIndex: 0
+          scores: new Map([[socket.id, 0]]),
+          answers: new Map(),
+          round: 1,
+          subject: 'math',
         });
       } else {
-        rooms.get(roomId).maxPlayers = maxPlayers;
+        const room = rooms.get(roomId);
+        room.maxPlayers = maxPlayers;
+    
+        const alreadyExists = room.players.some(p => p.socketId === socket.id);
+        if (!alreadyExists) {
+          room.players.push(hostPlayer);
+          room.scores.set(socket.id, 0);
+        }
       }
-
-      const room = rooms.get(roomId);
-      io.to(roomId).emit("playerListUpdate", {
-        players: room.players,
-        joinedCount: room.players.length,
-        maxPlayers: room.maxPlayers,
-      });
+    
+      updatePlayerList(io, roomId);
     });
+    
 
     socket.on("joinRoom", ({ roomId, name, country }) => {
       const room = rooms.get(roomId);
-      if (!room) {
-        socket.emit("error", { message: "Room not found." });
-        return;
+      if (!room) return socket.emit("error", { message: "Room not found." });
+    
+      // Reject invalid name or country
+      if (!name?.trim() || !country?.trim()) {
+        return socket.emit("error", { message: "Name and country are required." });
       }
-
+    
+      // Check if room is full
       if (room.players.length >= room.maxPlayers) {
-        socket.emit("roomFull", { message: "Room is already full." });
-        return;
+        return socket.emit("roomFull", { message: "Room is full." });
       }
-
+    
+      // Check if player already joined
+      const alreadyJoined = room.players.some(p => p.socketId === socket.id);
+      if (alreadyJoined) {
+        return socket.emit("error", { message: "You have already joined the room." });
+      }
+    
       socket.join(roomId);
-      const alreadyJoined = room.players.find((p) => p.socketId === socket.id);
-      if (!alreadyJoined) {
-        room.players.push({ socketId: socket.id, name, country, _id: socket.id });
-      }
-
-      io.to(roomId).emit("playerListUpdate", {
-        players: room.players,
-        joinedCount: room.players.length,
-        maxPlayers: room.maxPlayers,
+    
+      // Add player safely
+      room.players.push({ socketId: socket.id, name: name.trim(), country: country.trim() });
+      room.scores.set(socket.id, 0);
+    
+      updatePlayerList(io, roomId);
+    
+      socket.emit("playerWaiting", {
+        message: "Waiting for host...",
+        current: room.players.length,
+        max: room.maxPlayers,
       });
-
-      socket.emit("playerWaiting");
-    });
-
-    socket.on("questionsLoaded", ({ roomId, questions }) => {
-      const room = rooms.get(roomId);
-      if (room) {
-        room.questions = questions;
-        room.currentQuestion = questions[0];
-        room.currentQuestionIndex = 0;
+    
+      if (room.players.length === room.maxPlayers) {
+        io.to(roomId).emit("roomFull", {
+          message: "Room is full. Waiting for host...",
+        });
       }
     });
+    
 
     socket.on("startGame", ({ roomId }) => {
       const room = rooms.get(roomId);
-      if (!room || room.players.length === 0 || room.questions.length === 0) return;
-
-      room.currentQuestionIndex = 0;
-      room.roundIndex = 0;
-      room.currentPlayerIndex = 0;
-      room.currentQuestion = room.questions[0];
-
-      io.to(roomId).emit("gameStarted", {
-        players: room.players,
-        maxPlayers: room.maxPlayers,
-        currentQuestion: room.currentQuestion,
-      });
-
-      io.to(roomId).emit("questionUpdate", room.currentQuestion);
-      io.to(roomId).emit("playerTurnUpdate", {
-        playerIndex: 0,
-        roundIndex: 0
-      });
-      io.to(roomId).emit("leaderboardUpdate", room.players);
+      if (room) {
+        sanitizePlayerList(room);
+        io.to(roomId).emit("gameStarting");
+        setTimeout(() => {
+          sendNextQuestion(io, roomId);
+        }, 4000);
+      }
     });
 
-    socket.on("playerAnswered", ({ roomId, playerId, isCorrect, option }) => {
+    socket.on("startNextRound", ({ roomId }) => {
+      const room = rooms.get(roomId);
+      if (room) {
+        sanitizePlayerList(room);
+        room.currentPlayerIndex = 0;
+        room.answers.clear();
+        room.round += 1;
+        console.log(`🚀 Starting round ${room.round} in room ${roomId}`);
+        io.to(roomId).emit("roundStarting", { round: room.round });
+        setTimeout(() => {
+          sendNextQuestion(io, roomId);
+        }, 2000);
+      }
+    });
+
+    socket.on("answer", ({ roomId, socketId, isCorrect, answer }) => {
       const room = rooms.get(roomId);
       if (!room) return;
 
-      if (isCorrect) {
-        const player = room.players.find(p => p._id === playerId);
-        if (player) {
-          player.points = (player.points || 0) + 10;
-        }
+      sanitizePlayerList(room);
+
+      room.answers.set(socketId, answer);
+      const currentScore = room.scores.get(socketId) || 0;
+      if (isCorrect) room.scores.set(socketId, currentScore + 10);
+
+      io.to(roomId).emit("playerAnswersUpdate", {
+        answers: Array.from(room.answers.entries()).map(([id, ans]) => ({
+          playerId: id,
+          answer: ans
+        })),
+      });
+
+      updatePlayerList(io, roomId);
+
+      if (room.answers.size === room.players.length) {
+        const leaderboard = room.players
+          .map(p => ({
+            ...p,
+            score: room.scores.get(p.socketId) || 0,
+          }))
+          .sort((a, b) => b.score - a.score);
+
+        io.to(roomId).emit("roundEnded", { leaderboard });
       }
-
-      setTimeout(() => {
-        if (room.currentPlayerIndex + 1 < room.players.length) {
-          room.currentPlayerIndex++;
-          io.to(roomId).emit("playerTurnUpdate", {
-            playerIndex: room.currentPlayerIndex,
-            roundIndex: room.roundIndex
-          });
-        } else {
-          const maxPoints = Math.max(...room.players.map(p => p.points || 0));
-          const survivors = room.players.filter(p => (p.points || 0) === maxPoints);
-
-          if (survivors.length <= 1 || room.currentQuestionIndex + 1 >= room.questions.length) {
-            io.to(roomId).emit("gameOver", { survivors });
-          } else {
-            room.roundIndex++;
-            room.currentQuestionIndex++;
-            room.currentQuestion = room.questions[room.currentQuestionIndex];
-            room.currentPlayerIndex = 0;
-            room.players = survivors;
-
-            io.to(roomId).emit("questionUpdate", room.currentQuestion);
-            io.to(roomId).emit("playerTurnUpdate", {
-              playerIndex: 0,
-              roundIndex: room.roundIndex
-            });
-            io.to(roomId).emit("leaderboardUpdate", room.players);
-          }
-        }
-      }, 1000);
-    });
-
-    socket.on("updateLeaderboard", ({ roomId, leaderboard }) => {
-      io.to(roomId).emit("leaderboardUpdate", leaderboard);
     });
 
     socket.on("disconnect", () => {
-      for (const [roomId, room] of rooms) {
+      console.log("❌ Disconnected:", socket.id);
+      for (const [roomId, room] of rooms.entries()) {
         const index = room.players.findIndex(p => p.socketId === socket.id);
         if (index !== -1) {
           room.players.splice(index, 1);
-          io.to(roomId).emit("playerListUpdate", {
-            players: room.players,
-            joinedCount: room.players.length,
-            maxPlayers: room.maxPlayers,
-          });
+          room.scores.delete(socket.id);
+          room.answers.delete(socket.id);
+          sanitizePlayerList(room);
+          updatePlayerList(io, roomId);
+
+          if (room.players.length === 0) {
+            clearTimeout(room.questionTimer);
+            rooms.delete(roomId);
+          }
           break;
         }
       }
     });
+  });
+};
+
+/**
+ * Sends the next question to players and starts a timer for the current player's turn.
+ */
+const sendNextQuestion = (io, roomId) => {
+  const room = rooms.get(roomId);
+  if (!room) return;
+
+  sanitizePlayerList(room);
+
+  const currentIndex = room.currentPlayerIndex;
+  const currentPlayer = room.players[currentIndex];
+  const level = String(room.round);
+
+  const levelQuestions = questionsDB.math?.[level];
+  if (!levelQuestions || levelQuestions.length === 0) {
+    console.warn(`⚠️ No questions found for level ${level}`);
+    io.to(roomId).emit("error", { message: `No questions for level ${level}` });
+    return;
+  }
+
+  const shuffledQuestions = [...levelQuestions].sort(() => Math.random() - 0.5);
+  const question = shuffledQuestions[0];
+
+  const leaderboard = room.players
+    .map(player => ({
+      ...player,
+      score: room.scores.get(player.socketId) || 0,
+      isCurrent: player.socketId === currentPlayer.socketId,
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  io.to(roomId).emit("newQuestion", {
+    question,
+    currentPlayer,
+    leaderboard,
+    timeLeft: 20,
+  });
+
+  startTurnTimer(io, roomId);
+};
+
+/**
+ * Starts a timer for the current player's turn
+ */
+const startTurnTimer = (io, roomId) => {
+  const room = rooms.get(roomId);
+  if (!room) return;
+
+  sanitizePlayerList(room);
+
+  const currentPlayer = room.players[room.currentPlayerIndex];
+  let timeLeft = 20;
+
+  const interval = setInterval(() => {
+    timeLeft--;
+    io.to(roomId).emit("timerUpdate", { timeLeft });
+    if (timeLeft <= 0) clearInterval(interval);
+  }, 1000);
+
+  room.questionTimer = setTimeout(() => {
+    clearInterval(interval);
+    io.to(roomId).emit("timeUp");
+
+    room.currentPlayerIndex++;
+    if (room.currentPlayerIndex >= room.players.length) {
+      const leaderboard = room.players
+        .map(p => ({
+          ...p,
+          score: room.scores.get(p.socketId) || 0,
+        }))
+        .sort((a, b) => b.score - a.score);
+
+      io.to(roomId).emit("roundEnded", { leaderboard });
+    } else {
+      sendNextQuestion(io, roomId);
+    }
+  }, 20000);
+};
+
+/**
+ * Sends updated player list to clients in the room
+ */
+const updatePlayerList = (io, roomId) => {
+  const room = rooms.get(roomId);
+  if (!room) return;
+
+  sanitizePlayerList(room);
+
+  io.to(roomId).emit("playerListUpdate", {
+    players: room.players.map(player => ({
+      socketId: player.socketId,
+      name: player.name,
+      country: player.country,
+      score: room.scores.get(player.socketId) || 0,
+    })),
+    joinedCount: room.players.length,
+    maxPlayers: room.maxPlayers,
   });
 };
 

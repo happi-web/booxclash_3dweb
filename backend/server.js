@@ -10,6 +10,8 @@ import connectDB from './config/db.js';
 import roomRoutes from './routes/roomRoutes.js';
 import registerGameHandlers from './sockets/gameSocket.js';
 import experimentRoutes from './routes/experimentRoutes.js';
+import roomsRoutes from './routes/roomsRoutes.js';
+import handleSocketConnection from './socket.js';
 import authRoutes from './routes/authRoutes.js';
 import questionsRoutes from './routes/questionsRoutes.js';
 import path from 'path';
@@ -40,13 +42,14 @@ const io = new Server(server, {
 });
 
 registerGameHandlers(io);
+handleSocketConnection(io);
 
 app.use(express.json());
 app.use('/api/rooms', roomRoutes);
 app.use("/api", authRoutes); // this is key
 app.use("/api/games", gameRoutes);
 app.use("/api/questions", questionsRoutes);
-
+app.use('/api/rooms', roomsRoutes);
 app.use("/api/lesson-content", lessonContentRoutes);
 app.use("/api/materials-tools", materialsToolsRoutes);
 app.use('/api/experiments', experimentRoutes);

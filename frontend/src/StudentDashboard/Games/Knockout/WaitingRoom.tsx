@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import socket from "../../../socket";
+import socket from "../../../../socket";
 
 interface Player {
   name: string;
@@ -14,7 +14,6 @@ const WaitingRoom = () => {
 
   const {
     subject,
-    level,
     participants,
     hostName: stateHostName,
     hostCountry: stateHostCountry,
@@ -45,53 +44,45 @@ const WaitingRoom = () => {
 
   const playerName = sessionStorage.getItem("playerName");
   const playerCountry = sessionStorage.getItem("playerCountry");
-
+  useEffect(() => {
+    socket.on("gameStarting", () => {
+      navigate(`/play-ground/${roomId}`, {
+        state: {
+          players,
+          roomId,
+          hostName,
+          hostCountry,
+          subject,
+        },
+      });
+    });
+  
+    return () => {
+      socket.off("gameStarting");
+    };
+  }, [players, roomId, hostName, hostCountry, subject]);
+  
   useEffect(() => {
     if (!roomId) return;
-
+  
     const isHost = !!hostName && !!hostCountry;
-
+  
     if (isHost) {
       socket.emit("hostJoinRoom", {
         roomId,
         maxPlayers: participants,
       });
     }
-
+  
     if (playerName && playerCountry && !sessionStorage.getItem("hasJoined")) {
       socket.emit("joinRoom", {
         roomId,
         name: playerName,
         country: playerCountry,
       });
-
       sessionStorage.setItem("hasJoined", "true");
     }
-
-    const fetchPlayers = async () => {
-      try {
-        const res = await fetch(`http://localhost:5000/api/rooms/${roomId}/players`);
-        if (res.ok) {
-          let playersData = await res.json();
-
-          if (hostIsPlayer) {
-            const hostInList = playersData.some(
-              (p: Player) => p.name === hostName && p.country === hostCountry
-            );
-            if (!hostInList) {
-              playersData = [{ name: hostName, country: hostCountry }, ...playersData];
-            }
-          }
-
-          setPlayers(playersData);
-        }
-      } catch (err) {
-        console.error("Error fetching players:", err);
-      }
-    };
-
-    fetchPlayers();
-
+  
     const handlePlayerListUpdate = ({
       players,
       joinedCount,
@@ -102,53 +93,36 @@ const WaitingRoom = () => {
       maxPlayers: number;
     }) => {
       let updatedPlayers = [...players];
-
+  
       if (hostIsPlayer) {
         const hostInList = updatedPlayers.some(
-          (p) => p.name === hostName && p.country === hostCountry
+          (p: Player) => p.name === hostName && p.country === hostCountry
         );
         if (!hostInList) {
           updatedPlayers = [{ name: hostName, country: hostCountry }, ...updatedPlayers];
         }
       }
-
+  
       setPlayers(updatedPlayers);
       setMaxPlayers(maxPlayers);
-
+  
       if (joinedCount === maxPlayers) {
         setStatus("Room full. Waiting for host to start...");
-        if (isHost) setShowStartButton(true);
+        if (!!hostName && !!hostCountry) setShowStartButton(true);
       } else {
         setStatus(`${joinedCount}/${maxPlayers} Players Joined`);
         setShowStartButton(false);
       }
     };
-
-    const handleGameStart = () => {
-      const playersWithIds = players.map((p) => ({
-        ...p,
-        id: crypto.randomUUID(),
-      }));
-
-      navigate(`/play-ground/${roomId}`, {
-        state: {
-          roomId,
-          players: playersWithIds,
-          subject,
-          level,
-          hostName,
-        },
-      });
-    };
-
+  
     socket.on("playerListUpdate", handlePlayerListUpdate);
-    socket.on("startGame", handleGameStart);
-
+  
     return () => {
       socket.off("playerListUpdate", handlePlayerListUpdate);
-      socket.off("startGame", handleGameStart);
     };
-  }, [roomId, participants, navigate, subject, level, hostName, playerName, playerCountry, hostCountry, hostIsPlayer]);
+  }, [roomId, participants, subject, hostName, hostCountry, playerName, playerCountry, hostIsPlayer]);
+  
+  
 
   const handleCopyRoomCode = () => {
     if (!roomId) return;
@@ -163,7 +137,7 @@ const WaitingRoom = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center py-10">
+    <div className="min-h-screen bg-blue/70 text-white flex flex-col items-center py-10">
       <h1 className="text-3xl font-bold mb-6">Waiting Room</h1>
 
       <div className="bg-gray-800 p-6 rounded-xl w-full max-w-md space-y-4 shadow">
@@ -181,7 +155,6 @@ const WaitingRoom = () => {
           {hostIsPlayer && <span className="text-green-400 ml-2">(Playing)</span>}
         </p>
         <p><strong>Subject:</strong> {subject}</p>
-        <p><strong>Level:</strong> {level}</p>
         <p><strong>Max Players:</strong> {maxPlayers}</p>
       </div>
 

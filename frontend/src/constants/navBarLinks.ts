@@ -9,12 +9,12 @@ export const navLinks = [
     {
       id: "games",
       name: "Games",
-      href: "/games",
+      href: "/signup",
     },
     {
       id: "lessons",
       name: "Lessons",
-      href: "/lessons",
+      href: "/signup",
     },
     {
       id: "about",

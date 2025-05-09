@@ -5,7 +5,6 @@ export const createRoom = async (req, res) => {
     const {
       roomId,
       subject,
-      level,
       numPlayers,
       hostName,
       hostCountry,
@@ -25,7 +24,6 @@ export const createRoom = async (req, res) => {
     const room = await Room.create({
       roomId,
       subject,
-      level,
       numPlayers,
       hostName,
       hostCountry,
@@ -52,7 +50,6 @@ export const getRoomById = async (req, res) => {
     res.json({
       roomId: room.roomId,
       subject: room.subject,
-      level: room.level,
       numPlayers: room.numPlayers,
       hostName: room.hostName,
       hostCountry: room.hostCountry,
@@ -62,6 +59,22 @@ export const getRoomById = async (req, res) => {
   } catch (error) {
     console.error('Error fetching room:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+// Get players by roomId
+export const getPlayersInRoom = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const room = await Room.findOne({ roomId });
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    res.status(200).json({ players: room.players });
+  } catch (err) {
+    console.error("Error fetching players:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
