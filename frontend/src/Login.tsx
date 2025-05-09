@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const Login = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
@@ -15,7 +17,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/login", {
+      const response = await fetch(`${API_BASE}/api/login`, {
         method: "POST",
         credentials: "include", // important for cookie-based auth
         headers: {

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 
-
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 
 const Signup = () => {
   const navigate = useNavigate();
