@@ -1,4 +1,5 @@
 import React, { useEffect, useState, Suspense } from "react";
+import { lessonComponentMap } from "./asserts/Lessons/lessonComponentMap";
 
 type LessonInterfaceProps = {
   subject: string;
@@ -37,18 +38,15 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
         const res = await fetch(
           `${API_BASE}/api/lesson-content/get?subject=${subject}&level=${level}&topic=${topic}`
         );
+        if (!res.ok) throw new Error("Network response was not ok");
         const data: LessonContent = await res.json();
 
-        if (data) {
-          setLessonContent(data);
-        } else {
-          setError("No content found for the selected topic.");
-        }
-
-        setLoading(false);
+        if (data) setLessonContent(data);
+        else setError("No content found for the selected topic.");
       } catch (err) {
         console.error("Failed to fetch lesson content", err);
         setError("Failed to load content.");
+      } finally {
         setLoading(false);
       }
     };
@@ -56,20 +54,17 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
     fetchLessonContent();
   }, [subject, level, topic]);
 
-  useEffect(() => {
-    if (lessonContent?.componentLink) {
-      const loadComponent = async () => {
-        try {
-          const Component = (await import(`./Lessons/${lessonContent.componentLink}`)).default;
-          setDynamicComponent(() => Component);
-        } catch (error) {
-          console.error("Error loading component:", error);
-          setDynamicComponent(null);
-        }
-      };
-      loadComponent();
+useEffect(() => {
+  if (lessonContent?.componentLink) {
+    const Component = lessonComponentMap[lessonContent.componentLink];
+    if (Component) {
+      setDynamicComponent(() => Component);
+    } else {
+      console.warn("Component not found in map for:", lessonContent.componentLink);
+      setDynamicComponent(null);
     }
-  }, [lessonContent]);
+  }
+}, [lessonContent]);
 
   const extractYouTubeID = (url: string): string | null => {
     const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
@@ -82,7 +77,7 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
   if (!lessonContent) return <p className="p-4 text-red-600">No lesson content available.</p>;
 
   return (
-    <div className="w-full h-[calc(100vh-100px)] bg-black text-orange-400">
+    <div className="w-full h-[calc(100vh-100px)] bg-black text-orange-400 relative">
       {step === "START" && (
         <div className="flex flex-col items-center justify-center h-full space-y-4">
           <button
@@ -101,52 +96,47 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
         </div>
       )}
 
-{step === "KNOW" && (
-  <div className="flex h-full overflow-hidden">
-    {/* Left: Explanation (75%) */}
-    <div className="w-3/4 p-4 max-h-full bg-purple-950 overflow-auto">
-      <h2 className="text-xl font-semibold mb-4">{lessonContent.topic} - Concept</h2>
-      <div className="border rounded-lg bg-white p-6 shadow whitespace-pre-line text-purple-950 leading-relaxed space-y-4">
-        {lessonContent.explanation
-          .split("\n")
-          .filter((line) => line.trim() !== "")
-          .map((para, index) => (
-            <p key={index}>{para.trim()}</p>
-          ))}
-      </div>
-    </div>
+      {step === "KNOW" && (
+        <div className="flex h-full overflow-hidden">
+          <div className="w-3/4 p-4 max-h-full bg-purple-950 overflow-auto">
+            <h2 className="text-xl font-semibold mb-4">{lessonContent.topic} - Concept</h2>
+            <div className="border rounded-lg bg-white p-6 shadow whitespace-pre-line text-purple-950 leading-relaxed space-y-4">
+              {lessonContent.explanation
+                .split("\n")
+                .filter((line) => line.trim() !== "")
+                .map((para, index) => (
+                  <p key={index}>{para.trim()}</p>
+                ))}
+            </div>
+          </div>
 
-    {/* Right: Summary Card (25%) */}
-    <div className="w-1/4 p-4 bg-purple-950 text-purple-950 border-l overflow-y-auto">
-      <h2 className="text-xl font-bold mb-2 text-amber-100">Summary</h2>
-      <div className="bg-white text-purple-950 p-4 rounded mb-4 text-sm whitespace-pre-line">
-        <ul className="list-disc ml-5 space-y-2">
-          {lessonContent.explanation
-            .split("\n")
-            .filter((line) => line.trim() !== "")
-            .slice(0, 4)
-            .map((point, index) => (
-              <li key={index}>{point.trim()}</li>
-            ))}
-        </ul>
-      </div>
-    </div>
+          <div className="w-1/4 p-4 bg-purple-950 text-purple-950 border-l overflow-y-auto">
+            <h2 className="text-xl font-bold mb-2 text-amber-100">Summary</h2>
+            <div className="bg-white text-purple-950 p-4 rounded mb-4 text-sm whitespace-pre-line">
+              <ul className="list-disc ml-5 space-y-2">
+                {lessonContent.explanation
+                  .split("\n")
+                  .filter((line) => line.trim() !== "")
+                  .slice(0, 4)
+                  .map((point, index) => (
+                    <li key={index}>{point.trim()}</li>
+                  ))}
+              </ul>
+            </div>
+          </div>
 
-    {/* Navigation Button */}
-    <button
-      onClick={() => setStep("WATCH")}
-      className="absolute bottom-6 right-6 px-6 py-3 bg-orange-600 hover:bg-purple-700 rounded text-purple-100 font-bold
-"
-    >
-      Complete &rarr; Watch
-    </button>
-  </div>
-)}
-
+          <button
+            onClick={() => setStep("WATCH")}
+            className="absolute bottom-6 right-6 px-6 py-3 bg-orange-600 hover:bg-purple-700 rounded text-purple-100 font-bold"
+          >
+            Complete → Watch
+          </button>
+        </div>
+      )}
 
       {step === "WATCH" && (
         <div className="p-8 h-full overflow-auto">
-          <h2 className="text-2xl font-bold mb-4">WATCH</h2>
+          <h2 className="text-2xl font-bold mb-4">Watch</h2>
           <div className="aspect-w-16 aspect-h-9 max-w-4xl mx-auto">
             <iframe
               className="w-full h-75 rounded"
@@ -159,20 +149,18 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
           </div>
           <button
             onClick={() => setStep("DO")}
-            className="absolute bottom-6 right-6 px-6 py-3 bg-orange-600 hover:bg-purple-700 rounded text-purple-100 font-bold
-"
+            className="absolute bottom-6 right-6 px-6 py-3 bg-orange-600 hover:bg-purple-700 rounded text-purple-100 font-bold"
           >
-            Complete &rarr; Do
+            Complete → Do
           </button>
         </div>
       )}
 
       {step === "DO" && (
         <div className="flex h-full overflow-hidden">
-          {/* Left: Canvas (75%) */}
-          <div className="w-3/4 p-4 max-h-120 bg-purple-950 overflow-auto">
-            <h2 className="text-xl max-h-110 font-semibold mb-2">{lessonContent.topic} Canvas</h2>
-            <div className="border rounded-lg bg-white p-4 shadow min-h-[300px] h-105">
+          <div className="w-3/4 p-4 bg-purple-950 overflow-auto">
+            <h2 className="text-xl font-semibold mb-2">{lessonContent.topic} Canvas</h2>
+            <div className="border rounded-lg bg-white p-4 shadow min-h-[300px]">
               <Suspense fallback={<div>Loading activity...</div>}>
                 {DynamicComponent ? (
                   <DynamicComponent />
@@ -183,7 +171,6 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
             </div>
           </div>
 
-          {/* Right: Instructions (25%) */}
           <div className="w-1/4 p-4 bg-black text-purple-500 border-l overflow-y-auto">
             <h2 className="text-xl font-bold mb-2">Instructions</h2>
             <div className="bg-white text-purple-500 p-4 rounded mb-4">
@@ -197,11 +184,12 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
               </ol>
             </div>
           </div>
+
           <button
             onClick={onBack}
             className="absolute bottom-6 right-6 px-6 py-3 bg-orange-600 hover:bg-purple-700 rounded text-purple-100 font-bold"
           >
-            Complete &rarr; Back to Topics
+            Complete → Back to Topics
           </button>
         </div>
       )}

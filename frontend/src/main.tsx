@@ -6,7 +6,7 @@ import HomePage from './HomePage';
 import PlayGround from './StudentDashboard/Games/Knockout/PlayGround';
 import StudentDashboard from './StudentDashboard/StudentDashboard';
 import WaitingRoom from './StudentDashboard/Games/Knockout/WaitingRoom';
-import PlaceValues from './StudentDashboard/HandsOnLearning/Lessons/PlaceValues';
+import PlaceValues from './StudentDashboard/HandsOnLearning/asserts/Lessons/PlaceValues';
 import Signup from './SignUp';
 import Login from './Login';
 import Dashboard from './Admin/Dashboard';
