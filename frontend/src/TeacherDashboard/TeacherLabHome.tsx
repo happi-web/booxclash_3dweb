@@ -25,8 +25,8 @@ function TeacherExperimentRoom() {
     { id: 1, name: 'Alice', grade: 85 },
     { id: 2, name: 'Bob', grade: 90 },
   ]);
-  const [experiments, setExperiments] = useState<Experiment[]>([]);
-  const [tests, setTests] = useState<Test[]>([]);
+  const [] = useState<Experiment[]>([]);
+  const [] = useState<Test[]>([]);
   const [selectedTab, setSelectedTab] = useState<'students' | 'experiments' | 'tests'>('students');
 
   const updateGrade = (id: number, newGrade: number) => {
@@ -35,13 +35,7 @@ function TeacherExperimentRoom() {
     );
   };
 
-  const createExperiment = (newExperiment: Experiment) => {
-    setExperiments(prev => [...prev, newExperiment]);
-  };
 
-  const createTest = (newTest: Test) => {
-    setTests(prev => [...prev, newTest]);
-  };
 
   return (
     <div className="p-6 min-h-screen bg-gray-100">

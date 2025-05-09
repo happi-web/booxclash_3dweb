@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { useDrop } from 'react-dnd';
@@ -21,7 +21,7 @@ interface Experiment {
   steps: string[]; // e.g., ["Add vinegar", "Mix with baking soda"]
 }
 
-const StudentExperimentRoom = () => {
+const StudentExperimentRoom: React.FC = () => {
   const { state } = useLocation();
   const { id } = state || {};
 
@@ -32,24 +32,30 @@ const StudentExperimentRoom = () => {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [findings, setFindings] = useState<string>('');
 
+  // Create drop target ref
+  const dropRef = useRef<HTMLDivElement>(null);
+
   const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>({
     accept: ['material', 'tool'],
     drop: (item) => {
       setDroppedItems((prev) => [...prev, item]);
-      autoCompleteStep(item); // 👈 try auto-completing a step based on dropped item
+      autoCompleteStep(item);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),
   });
 
+  // Attach drop behavior to dropRef
+  drop(dropRef);
+
   useEffect(() => {
     const fetchExperiment = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/experiments/${id}`);
         const expData = response.data;
-  
-        // Parse steps if it's a string
+
+        // Parse steps if stored as string
         if (typeof expData.steps === 'string') {
           try {
             expData.steps = JSON.parse(expData.steps);
@@ -58,7 +64,7 @@ const StudentExperimentRoom = () => {
             expData.steps = [];
           }
         }
-  
+
         setExperiment(expData);
       } catch (error) {
         console.error('Error fetching experiment', error);
@@ -66,12 +72,11 @@ const StudentExperimentRoom = () => {
         setLoading(false);
       }
     };
-  
+
     if (id) {
       fetchExperiment();
     }
   }, [id]);
-  
 
   const handleCompleteStep = (step: string) => {
     if (!completedSteps.includes(step)) {
@@ -79,7 +84,6 @@ const StudentExperimentRoom = () => {
     }
   };
 
-  // New: auto-complete step if item name appears in the step description
   const autoCompleteStep = (item: DragItem) => {
     if (!experiment) return;
 
@@ -97,10 +101,10 @@ const StudentExperimentRoom = () => {
 
   return (
     <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 min-h-screen">
-      
-      {/* Dropping Area */}
+
+      {/* Drop Zone */}
       <div
-        ref={drop}
+        ref={dropRef}
         className={`col-span-2 border-4 rounded-lg p-4 flex flex-wrap items-start justify-start gap-4 bg-gray-50 min-h-[400px] ${
           isOver ? 'border-green-500' : 'border-gray-300'
         }`}
@@ -158,30 +162,28 @@ const StudentExperimentRoom = () => {
       </div>
 
       {/* Steps */}
-{/* Steps */}
-<div className="border rounded-lg p-4 bg-white shadow">
-  <h2 className="text-xl font-bold mb-4">Steps 📝</h2>
-  {Array.isArray(experiment.steps) && experiment.steps.length > 0 ? (
-    <ul className="space-y-4 text-sm">
-      {experiment.steps.map((step, idx) => (
-        <li key={idx} className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={completedSteps.includes(step)}
-            onChange={() => handleCompleteStep(step)}
-            className="w-4 h-4"
-          />
-          <span className={`${completedSteps.includes(step) ? 'line-through text-gray-400' : ''}`}>
-            {step}
-          </span>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p>No steps provided yet.</p>
-  )}
-</div>
-
+      <div className="border rounded-lg p-4 bg-white shadow">
+        <h2 className="text-xl font-bold mb-4">Steps 📝</h2>
+        {Array.isArray(experiment.steps) && experiment.steps.length > 0 ? (
+          <ul className="space-y-4 text-sm">
+            {experiment.steps.map((step, idx) => (
+              <li key={idx} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={completedSteps.includes(step)}
+                  onChange={() => handleCompleteStep(step)}
+                  className="w-4 h-4"
+                />
+                <span className={`${completedSteps.includes(step) ? 'line-through text-gray-400' : ''}`}>
+                  {step}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No steps provided yet.</p>
+        )}
+      </div>
 
       {/* Findings */}
       <div className="col-span-1 md:col-span-4 mt-8 p-6 border rounded-lg bg-gray-100">
