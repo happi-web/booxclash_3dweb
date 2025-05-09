@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const ChangePassword = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -7,7 +7,7 @@ const ChangePassword = () => {
   const handleChange = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("http://localhost:5000/api/change-password", {
+    const res = await fetch(`${API_BASE}/api/change-password`, {
       method: "POST",
       credentials: "include",
       headers: {

@@ -28,14 +28,14 @@ const LessonInterface: React.FC<LessonInterfaceProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [DynamicComponent, setDynamicComponent] = useState<React.ComponentType | null>(null);
-
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const [step, setStep] = useState<"START" | "KNOW" | "WATCH" | "DO">("START");
 
   useEffect(() => {
     const fetchLessonContent = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/lesson-content/get?subject=${subject}&level=${level}&topic=${topic}`
+          `${API_BASE}/api/lesson-content/get?subject=${subject}&level=${level}&topic=${topic}`
         );
         const data: LessonContent = await res.json();
 

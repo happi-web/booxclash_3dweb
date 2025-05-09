@@ -3,6 +3,7 @@ import TopicsGrid from "./HandsOnLearning/TopicsGrid";
 import LessonInterface from "./HandsOnLearning/LessonInterface";
 import NavBar from "./HandsOnLearning/Navbar";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 export default function HandsOnActivities() {
   const [selectedSubject, setSelectedSubject] = useState<string>("Math");
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
@@ -14,7 +15,7 @@ export default function HandsOnActivities() {
     const checkContentAvailability = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/lesson-content/get?subject=${selectedSubject}&level=${selectedLevel}&topic=`
+          `${API_BASE}/api/lesson-content/get?subject=${selectedSubject}&level=${selectedLevel}&topic=`
         );
         const data = await response.json();
         

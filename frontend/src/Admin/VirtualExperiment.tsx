@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 interface MaterialToolItem {
   id: string;
   name: string;
@@ -38,7 +38,7 @@ const VirtualExperiment: React.FC = () => {
 
   const fetchSavedExperiments = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/experiments');
+      const response = await axios.get(`${API_BASE}/api/experiments`);
       setSavedExperiments(response.data);
     } catch (error) {
       console.error('Error fetching saved experiments:', error);
@@ -48,7 +48,7 @@ const VirtualExperiment: React.FC = () => {
   const fetchMaterialsAndTools = async (selectedTopic: string) => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:5000/api/materials-tools?topic=${encodeURIComponent(selectedTopic)}`);
+      const response = await axios.get(`${API_BASE}/api/materials-tools?topic=${encodeURIComponent(selectedTopic)}`);
       setMaterials(response.data.materials || []);
       setTools(response.data.tools || []);
     } catch (error) {
@@ -88,8 +88,8 @@ const VirtualExperiment: React.FC = () => {
       formData.append('tools', JSON.stringify(selectedTools));
   
       const url = editingExperimentId
-        ? `http://localhost:5000/api/experiments/${editingExperimentId}`
-        : 'http://localhost:5000/api/experiments';
+        ? `${API_BASE}/api/experiments/${editingExperimentId}`
+        : `${API_BASE}/api/experiments`;
   
       const method = editingExperimentId ? 'PUT' : 'POST';
   
@@ -119,7 +119,7 @@ const VirtualExperiment: React.FC = () => {
   const handleDeleteExperiment = async (id: string) => {
     if (confirm('Are you sure you want to delete this experiment?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/experiments/${id}`);
+        await axios.delete(`${API_BASE}/api/experiments/${id}`);
         alert('Experiment deleted!');
         fetchSavedExperiments();
       } catch (error) {
@@ -235,7 +235,7 @@ const VirtualExperiment: React.FC = () => {
                     className="cursor-pointer"
                   >
                     <img
-                      src={`http://localhost:5000/${item.imageUrl.replace(/\\/g, '/')}`}
+                      src={`${API_BASE}/${item.imageUrl.replace(/\\/g, '/')}`}
                       alt={item.name}
                       className="w-12 h-12 mx-auto"
                     />
@@ -258,7 +258,7 @@ const VirtualExperiment: React.FC = () => {
                     className="cursor-pointer"
                   >
                     <img
-                      src={`http://localhost:5000/${item.imageUrl.replace(/\\/g, '/')}`}
+                      src={`${API_BASE}/${item.imageUrl.replace(/\\/g, '/')}`}
                       alt={item.name}
                       className="w-12 h-12 mx-auto"
                     />
@@ -285,7 +285,7 @@ const VirtualExperiment: React.FC = () => {
           {selectedMaterials.map(item => (
             <div key={item.id} className="flex items-center gap-2">
               <img
-                src={`http://localhost:5000/${item.imageUrl.replace(/\\/g, '/')}`}
+                src={`${API_BASE}/${item.imageUrl.replace(/\\/g, '/')}`}
                 alt={item.name}
                 className="w-12 h-12"
               />
@@ -306,7 +306,7 @@ const VirtualExperiment: React.FC = () => {
           {selectedTools.map(item => (
             <div key={item.id} className="flex items-center gap-2">
               <img
-                src={`http://localhost:5000/${item.imageUrl.replace(/\\/g, '/')}`}
+                src={`${API_BASE}/${item.imageUrl.replace(/\\/g, '/')}`}
                 alt={item.name}
                 className="w-12 h-12"
               />

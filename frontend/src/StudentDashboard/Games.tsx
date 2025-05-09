@@ -9,6 +9,7 @@ type Game = {
   imageUrl: string;
   component: string;
 };
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Games: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
@@ -16,7 +17,7 @@ const Games: React.FC = () => {
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/games");
+        const res = await axios.get(`${API_BASE}/api/games`);
         setGames(res.data);
       } catch (err) {
         console.error("Failed to load games:", err);
@@ -30,7 +31,7 @@ const Games: React.FC = () => {
     const normalizedUrl = url.replace(/\\/g, "/");
     return normalizedUrl.startsWith("http")
       ? normalizedUrl
-      : `http://localhost:5000/${normalizedUrl}`;
+      : `${API_BASE}/${normalizedUrl}`;
   };
 
   return (

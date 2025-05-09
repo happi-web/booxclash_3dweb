@@ -10,7 +10,7 @@ interface Experiment {
   tools: string[];
   result: string;
 }
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 type Section = 'experiments' | 'grades' | 'tests' | 'schedule';
 
 function StudentsLabHome() {
@@ -21,7 +21,7 @@ function StudentsLabHome() {
   useEffect(() => {
     const fetchExperiments = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/experiments');
+        const response = await axios.get(`${API_BASE}/api/experiments`);
         setExperiments(response.data); // assuming the response is an array of experiments
       } catch (error) {
         console.error('Error fetching experiments:', error);
@@ -81,7 +81,7 @@ function StudentsLabHome() {
               className="border rounded-lg overflow-hidden shadow hover:shadow-md transition p-4 flex flex-col items-center"
             >
               <img
-                src={`http://localhost:5000/${exp.thumbnailUrl}`} // 👈 correctly load image
+                src={`${API_BASE}/${exp.thumbnailUrl}`} // 👈 correctly load image
                 alt={exp.name}
                 className="h-32 w-32 object-cover mb-4"
               />

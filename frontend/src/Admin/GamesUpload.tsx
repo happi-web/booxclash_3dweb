@@ -18,13 +18,13 @@ const GamesUpload = () => {
     title: "",
     component: "",
   });
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const [savedGames, setSavedGames] = useState<GameData[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchGames = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/games");
+      const res = await axios.get(`${API_BASE}/api/games`);
       setSavedGames(res.data);
     } catch (err) {
       console.error("Error fetching games", err);
@@ -61,10 +61,10 @@ const GamesUpload = () => {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/games/${editingId}`, formData);
+        await axios.put(`${API_BASE}/api/games/${editingId}`, formData);
         setEditingId(null);
       } else {
-        await axios.post("http://localhost:5000/api/games", formData);
+        await axios.post(`${API_BASE}/api/games`, formData);
       }
       setContent({ image: null, imagePreview: "", title: "", component: "" });
       fetchGames();
@@ -86,7 +86,7 @@ const GamesUpload = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:5000/api/games/${id}`);
+      await axios.delete(`${API_BASE}/api/games/${id}`);
       fetchGames();
     } catch (err) {
       console.error("Error deleting game", err);
@@ -154,7 +154,7 @@ const GamesUpload = () => {
                 <img
                     src={
                       game.imagePreview
-                        ? `http://localhost:5000/uploads/${game.imagePreview}?t=${Date.now()}`
+                        ? `${API_BASE}/uploads/${game.imagePreview}?t=${Date.now()}`
                         : "https://via.placeholder.com/100"
                     }
                     alt="Game Thumbnail"

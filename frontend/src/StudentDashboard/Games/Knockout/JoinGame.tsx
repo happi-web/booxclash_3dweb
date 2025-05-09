@@ -10,11 +10,11 @@ const JoinGame = () => {
   const [waitingForHost, setWaitingForHost] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
-
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/profile", {
+        const res = await fetch(`${API_BASE}/api/profile`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -84,7 +84,7 @@ const JoinGame = () => {
     }
   
     try {
-      const res = await fetch(`http://localhost:5000/api/rooms/${code}`);
+      const res = await fetch(`${API_BASE}/api/rooms/${code}`);
       if (!res.ok) throw new Error("Room not found.");
       const roomData = await res.json();
   
@@ -93,7 +93,7 @@ const JoinGame = () => {
       socket.emit("joinRoom", { roomId: code, name, country });
   
       if (!playerAlreadyJoined) {
-        const playerRes = await fetch(`http://localhost:5000/api/rooms/${code}/join`, {
+        const playerRes = await fetch(`${API_BASE}/api/rooms/${code}/join`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ roomId: code, name, country }),

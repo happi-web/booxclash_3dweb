@@ -5,7 +5,7 @@ interface Item {
   image: File | null;
   preview: string | null;
 }
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 export default function AdminManageMaterials() {
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
@@ -93,7 +93,7 @@ export default function AdminManageMaterials() {
     formData.append("toolsData", JSON.stringify(tools.map(item => ({ name: item.name }))));
 
     try {
-      const response = await fetch("http://localhost:5000/api/materials-tools", {
+      const response = await fetch(`${API_BASE}/api/materials-tools`, {
         method: "POST",
         body: formData,
       });

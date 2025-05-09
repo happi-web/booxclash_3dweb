@@ -14,13 +14,14 @@ const HostGame = () => {
   const [error, setError] = useState("");
   const [includeHost, setIncludeHost] = useState(false);
   const navigate = useNavigate();
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     setRoomId(generateRoomId());
-
+    
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/profile", {
+        const res = await fetch(`${API_BASE}/api/profile`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${sessionStorage.getItem("token")}`,
@@ -60,7 +61,7 @@ const HostGame = () => {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/rooms/create", {
+      const res = await fetch(`${API_BASE}/api/rooms/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

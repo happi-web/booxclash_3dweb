@@ -10,7 +10,7 @@ interface DragItem {
   image: string;
   type: 'material' | 'tool';
 }
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 interface Experiment {
   _id: string;
   topic: string;
@@ -52,7 +52,7 @@ const StudentExperimentRoom: React.FC = () => {
   useEffect(() => {
     const fetchExperiment = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/experiments/${id}`);
+        const response = await axios.get(`${API_BASE}/api/experiments/${id}`);
         const expData = response.data;
 
         // Parse steps if stored as string
@@ -133,7 +133,7 @@ const StudentExperimentRoom: React.FC = () => {
               item={{
                 id: mat._id,
                 name: mat.name,
-                image: `http://localhost:5000/${mat.imageUrl.replace(/\\/g, '/')}`,
+                image: `${API_BASE}/${mat.imageUrl.replace(/\\/g, '/')}`,
                 type: 'material',
               }}
               type="material"
@@ -152,7 +152,7 @@ const StudentExperimentRoom: React.FC = () => {
               item={{
                 id: tool._id,
                 name: tool.name,
-                image: `http://localhost:5000/${tool.imageUrl.replace(/\\/g, '/')}`,
+                image: `${API_BASE}/${tool.imageUrl.replace(/\\/g, '/')}`,
                 type: 'tool',
               }}
               type="tool"

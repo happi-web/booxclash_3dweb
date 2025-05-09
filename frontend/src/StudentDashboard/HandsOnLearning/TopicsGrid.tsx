@@ -20,7 +20,7 @@ const TopicsGrid: React.FC<TopicsGridProps> = ({ subject, level, onTopicSelect }
   const [topics, setTopics] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const colors = [
     "bg-purple-500 hover:bg-purple-600",
     "bg-orange-500 hover:bg-orange-600",
@@ -30,7 +30,7 @@ const TopicsGrid: React.FC<TopicsGridProps> = ({ subject, level, onTopicSelect }
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/lesson-content/get-all");
+        const res = await fetch(`${API_BASE}/api/lesson-content/get-all`);
         const data: LessonContent[] = await res.json();
 
         const filteredTopics = data

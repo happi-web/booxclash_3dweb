@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import socket from '../../src/test/socket'; // adjust path if needed
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 type HostRoomProps = {
   onRoomCreated: (roomCode: string) => void;
 };
@@ -22,7 +22,7 @@ const HostRoom = ({ onRoomCreated }: HostRoomProps) => {
       maxPlayers,
     };
 
-    const res = await fetch('http://localhost:5000/api/rooms', {
+    const res = await fetch(`${API_BASE}/api/rooms`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(roomData),

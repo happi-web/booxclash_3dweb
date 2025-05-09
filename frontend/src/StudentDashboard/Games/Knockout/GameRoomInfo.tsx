@@ -22,14 +22,14 @@ const GameRoomInfo: React.FC = () => {
   const [room, setRoom] = useState<Room | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
   useEffect(() => {
     const fetchRoomAndPlayers = async () => {
         try {
           setLoading(true);
           const [roomRes, playersRes] = await Promise.all([
-            axios.get(`http://localhost:5000/api/${roomId}`),  // Corrected the roomId URL here
-            axios.get(`http://localhost:5000/api/players/${roomId}/players`),
+            axios.get(`${API_BASE}/api/${roomId}`),  // Corrected the roomId URL here
+            axios.get(`${API_BASE}/api/players/${roomId}/players`),
           ]);
       
           console.log('Room Response:', roomRes.data);

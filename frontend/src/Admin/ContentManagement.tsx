@@ -33,6 +33,7 @@ const ContentManagement: React.FC = () => {
   const [content, setContent] = useState<Lesson>(defaultLesson());
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     fetchLessons();
@@ -40,7 +41,7 @@ const ContentManagement: React.FC = () => {
 
   const fetchLessons = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/lesson-content/get-all");
+      const res = await fetch(`${API_BASE}/api/lesson-content/get-all`);
       const data = await res.json();
       setLessons(data);
     } catch (err) {
@@ -61,7 +62,7 @@ const ContentManagement: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/api/lesson-content/save", {
+      const response = await fetch(`${API_BASE}/api/lesson-content/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(content),
@@ -82,7 +83,7 @@ const ContentManagement: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this lesson?")) return;
     try {
-      await fetch(`http://localhost:5000/api/lesson-content/delete/${id}`, {
+      await fetch(`${API_BASE}/api/lesson-content/delete/${id}`, {
         method: "DELETE",
       });
       await fetchLessons();

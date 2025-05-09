@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const StudentManagement = () => {
   interface Student {
     _id: string;
@@ -23,7 +23,7 @@ const StudentManagement = () => {
 
   const fetchStudents = async () => {
     const token = sessionStorage.getItem("token");
-    const res = await fetch("http://localhost:5000/api/students", {
+    const res = await fetch(`${API_BASE}/api/students`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -37,7 +37,7 @@ const StudentManagement = () => {
   const handleRemoveStudent = async (id: string) => {
     try {
       const token = sessionStorage.getItem("token"); // or wherever you store it
-      const res = await fetch(`http://localhost:5000/api/students/${id}`, {
+      const res = await fetch(`${API_BASE}/api/students/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +66,7 @@ const StudentManagement = () => {
       const token = sessionStorage.getItem("token"); // Get the token from sessionStorage
       if (!token) throw new Error("No token provided.");
   
-      const res = await fetch("http://localhost:5000/api/students", {
+      const res = await fetch(`${API_BASE}/api/students`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

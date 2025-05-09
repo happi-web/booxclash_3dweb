@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { User } from "./Games/Knockout/types/User";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -24,7 +26,7 @@ export default function Profile() {
   useEffect(() => {
     if (!token) return;
     axios
-      .get<User>("http://localhost:5000/api/profile", {
+      .get<User>(`${API_BASE}/api/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setUser(res.data))
@@ -43,7 +45,7 @@ export default function Profile() {
     if (!token) return;
     try {
       await axios.post(
-        "http://localhost:5000/api/change-password",
+        `${API_BASE}/api/change-password`,
         { currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -66,7 +68,7 @@ export default function Profile() {
     const formData = new FormData();
     formData.append("profilePic", selectedFile);
     try {
-      await axios.post("http://localhost:5000/api/upload-profile-pic", formData, {
+      await axios.post(`${API_BASE}/api/upload-profile-pic`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -74,7 +76,7 @@ export default function Profile() {
       });
       alert("Profile picture updated!");
       setSelectedFile(null);
-      const res = await axios.get<User>("http://localhost:5000/api/profile", {
+      const res = await axios.get<User>(`${API_BASE}/api/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data);
@@ -95,7 +97,7 @@ export default function Profile() {
           <img
             src={
               user.profilePic
-                ? `http://localhost:5000/uploads/${user.profilePic}?t=${Date.now()}`
+                ? `${API_BASE}/uploads/${user.profilePic}?t=${Date.now()}`
                 : "https://via.placeholder.com/100"
             }
             alt="Profile"
