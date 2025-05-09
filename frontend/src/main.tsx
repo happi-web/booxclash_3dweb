@@ -14,7 +14,6 @@ import KnockoutHome from './StudentDashboard/Games/Knockout/KnockoutHome';
 import Landing from './StudentDashboard/Games/Knockout/Landing';
 import NumberHunt from './StudentDashboard/Games/NumberHunt/NumberHunt';
 import Insolo from './StudentDashboard/Games/Insolo/Insolo';
-import PlayerWaitingRoom from './StudentDashboard/Games/Knockout/PlayersWaitingRoom';
 import GameRoomInfo from './StudentDashboard/Games/Knockout/GameRoomInfo';
 import StudentExperimentRoom from './StudentDashboard/vsl/StudentExperimentRoom';
 import { DndProvider } from 'react-dnd';
@@ -36,7 +35,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/dashboard/educator" element={<TeacherDashboard />} />
         <Route path="/dashboard/admin" element={<Dashboard />} />
         <Route path="/waiting-room/:roomId" element={<WaitingRoom />} />
-        <Route path="/player-waiting" element={<PlayerWaitingRoom />} />
         <Route path="/place-value" element={<PlaceValues />} />
         <Route path="/number-bases" element={<NumberBases />} />
         <Route path="/lobby-room" element={<Lobby />} />
