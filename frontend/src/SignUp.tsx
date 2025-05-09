@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const Signup = () => {
   const navigate = useNavigate();
 
@@ -37,7 +40,7 @@ const Signup = () => {
     };
 
     try {
-      const signupRes = await fetch("http://localhost:5000/api/signup", {
+      const signupRes = await fetch(`${API_BASE}/api/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -48,7 +51,7 @@ const Signup = () => {
         throw new Error(error.error || "Signup failed");
       }
 
-      const loginRes = await fetch("http://localhost:5000/api/login", {
+      const loginRes = await fetch(`${API_BASE}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
