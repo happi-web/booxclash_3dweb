@@ -15,6 +15,7 @@ import handleSocketConnection from './socket.js';
 import authRoutes from './routes/authRoutes.js';
 import questionsRoutes from './routes/questionsRoutes.js';
 import path from 'path';
+
 dotenv.config();
 connectDB();
 
@@ -23,21 +24,32 @@ const server = http.createServer(app);
 app.use("/uploads", express.static("uploads"));
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+// ✅ Updated CORS options
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://booxclash-3dweb.vercel.app',
+];
 
-// CORS configuration to allow credentials
 const corsOptions = {
-  origin: 'http://localhost:5173',  // Allow frontend to connect
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,  // Allow cookies and other credentials
+  credentials: true,
 };
 
-app.use(cors(corsOptions)); // Apply CORS middleware
+app.use(cors(corsOptions));
 
+// ✅ Also update Socket.IO CORS config
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',  // Allow frontend origin
-    methods: ['GET', 'POST','PUT', 'DELETE'],
-    credentials: true,  // Enable credentials
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
   },
 });
 
@@ -46,12 +58,13 @@ handleSocketConnection(io);
 
 app.use(express.json());
 app.use('/api/rooms', roomRoutes);
-app.use("/api", authRoutes); // this is key
+app.use("/api", authRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/questions", questionsRoutes);
 app.use('/api/rooms', roomsRoutes);
 app.use("/api/lesson-content", lessonContentRoutes);
 app.use("/api/materials-tools", materialsToolsRoutes);
 app.use('/api/experiments', experimentRoutes);
+
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
